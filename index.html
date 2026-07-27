@@ -13,6 +13,20 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" href="icon-192.png">
+<script>
+/* ─────────────────────────────────────────────────────────────
+   CLOUD SYNC — paste your Firebase web config between the braces.
+   Leave it empty and the app runs local-only, exactly as before.
+   These values are public identifiers, not secrets; your data is
+   protected by the Firestore rules + sign-in, not by hiding them.
+   ───────────────────────────────────────────────────────────── */
+window.FIREBASE_CONFIG = {
+  // apiKey:     "",
+  // authDomain: "",
+  // projectId:  "",
+  // appId:      ""
+};
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -61,6 +75,15 @@
   .top h1{ font-size:22px; font-weight:700; letter-spacing:-.02em; margin:0; }
   .tally{ font-family:var(--mono); font-size:11px; color:var(--muted); text-align:right; line-height:1.3; }
   .tally b{ display:block; font-size:19px; color:var(--ink); font-weight:600; }
+  .syncdot{ display:none; width:6px; height:6px; border-radius:50%; margin-right:5px; vertical-align:middle; }
+  .syncdot.on{ display:inline-block; }
+  .syncdot.ok{ background:var(--signal); }
+  .syncdot.wait{ background:var(--brass); }
+  .syncdot.err{ background:#A03A32; }
+  .authrow{ display:flex; gap:6px; margin-bottom:8px; }
+  .authrow input{ flex:1; height:40px; padding:0 10px; font-size:16px; font-family:var(--mono);
+    border:1px solid var(--line); border-radius:8px; background:#FAFBFC; color:var(--ink); }
+  .authrow input:focus{ outline:none; border-color:var(--signal); background:#fff; }
 
   /* ---------- day picker ---------- */
   .days{ display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin-bottom:16px; }
@@ -144,6 +167,15 @@
   .posture h3, .panel h3{ margin:0 0 2px; font-size:13.5px; font-weight:600; }
   .posture p, .panel p{ margin:0 0 10px; font-size:11.5px; color:var(--muted); line-height:1.4; }
   .storenote{ font-family:var(--mono); font-size:9.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--muted); margin-top:10px; }
+  .seglab{ font-family:var(--mono); font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); margin:2px 0 5px; }
+  .seg{ display:flex; gap:6px; margin-bottom:12px; }
+  .segb{
+    flex:1; padding:9px 0; border-radius:8px; cursor:pointer;
+    border:1px solid var(--line); background:#FAFBFC; color:var(--ink);
+    font-family:var(--mono); font-size:12.5px; transition:background .14s, border-color .14s;
+  }
+  .segb[aria-pressed="true"]{ background:var(--signal); border-color:var(--signal); color:#fff; }
+  .unitbtn{ flex:0 0 74px; }
   .pitem{ display:flex; align-items:center; gap:10px; padding:6px 0; cursor:pointer; }
   .box{
     width:19px; height:19px; border-radius:5px; border:1.5px solid var(--line);
@@ -249,7 +281,7 @@
       <div class="eyebrow" id="eyebrow">Training log</div>
       <h1 id="title">Loading</h1>
     </div>
-    <div class="tally"><b id="count">—</b>sessions</div>
+    <div class="tally"><b id="count">—</b><span id="syncdot" class="syncdot"></span>sessions</div>
   </div>
   <div id="view"></div>
 </div>
@@ -317,7 +349,7 @@ const POSTURE = [
 ];
 
 /* ============ state ============ */
-let S = { sessions:[], draft:null, body:[], posture:{} };
+let S = { sessions:[], draft:null, body:[], posture:{}, prefs:{ unit:"kg", tape:"in", ex:{} } };
 let tab = "today", saveTimer = null;
 
 const today = () => new Date().toISOString().slice(0,10);
@@ -368,20 +400,175 @@ async function load(){
   S.body     = await grab("t:body", []);
   S.posture  = await grab("t:posture", {});
   S.draft    = await grab("t:draft", null);
+  const p    = await grab("t:prefs", {});
+  S.prefs = { unit: p.unit === "lb" ? "lb" : "kg",
+              tape: p.tape === "cm" ? "cm" : "in",
+              ex:   (p.ex && typeof p.ex === "object") ? p.ex : {},
+              updatedAt: p.updatedAt || 0 };
+  migrate();
 }
 
+/* Records written before sync existed have no id and no timestamp.
+   Merging needs both, so backfill them once, deterministically. */
+function migrate(){
+  let touched = false;
+  S.sessions.forEach((x, i) => {
+    if (!x.id){ x.id = (x.date || "0000-00-00") + "-d" + x.day + "-m" + i; touched = true; }
+    if (!x.updatedAt){ x.updatedAt = Date.parse(x.date || 0) || 1; touched = true; }
+  });
+  S.body.forEach(m => { if (!m.updatedAt){ m.updatedAt = Date.parse(m.date || 0) || 1; touched = true; } });
+  Object.keys(S.posture).forEach(k => {
+    if (Array.isArray(S.posture[k])){ S.posture[k] = { items: S.posture[k], ts: 1 }; touched = true; }
+  });
+  if (touched) save(["sessions", "body", "posture"]);
+}
+
+const postureItems = k => {
+  const v = S.posture[k];
+  return Array.isArray(v) ? v : (v && Array.isArray(v.items) ? v.items : []);
+};
+
+const SYNCED = ["sessions","body","posture","prefs"];
 function save(keys){
   clearTimeout(saveTimer);
   saveTimer = setTimeout(async () => {
     for (const k of keys) await DB.set("t:"+k, JSON.stringify(S[k]));
   }, 700);
+  if (keys.some(k => SYNCED.includes(k))) queueSync();
 }
+
+/* ============ units ============ */
+const KG_PER_LB = 0.45359237;
+
+/* Every logged set carries the unit it was entered in, so history stays
+   truthful even if the exercise later switches machines. Sets saved before
+   this feature existed are assumed kg.                                     */
+const setUnit = s => (s && s.u === "lb") ? "lb" : "kg";
+const unitFor = exId => S.prefs.ex[exId] === "lb" ? "lb"
+                      : S.prefs.ex[exId] === "kg" ? "kg"
+                      : S.prefs.unit;
+
+function convert(v, from, to){
+  const n = Number(v);
+  if (!isFinite(n) || from === to) return n;
+  return from === "lb" ? n * KG_PER_LB : n / KG_PER_LB;
+}
+/* round to something that exists on a real plate or stack */
+function tidy(v, u){
+  if (!isFinite(v)) return "";
+  const r = u === "lb" ? Math.round(v) : Math.round(v * 2) / 2;
+  return String(r);
+}
+/* a set's weight shown in whatever unit that exercise is currently on */
+function showW(s, to){
+  if (!s || !s.w) return "";
+  return tidy(convert(s.w, setUnit(s), to), to);
+}
+const stepFor = u => u === "lb" ? "5 lb" : "2.5 kg";
+
+const CM_PER_IN = 2.54;
+function convTape(v, from, to){
+  const n = Number(v);
+  if (!isFinite(n) || from === to) return n;
+  return from === "in" ? n * CM_PER_IN : n / CM_PER_IN;
+}
+
+/* ============ sync ============ */
+/* Local storage stays the source of truth for writes, so a dead signal at the
+   gym never blocks logging. The cloud is a background mirror.               */
+let SY = { mode:"off", email:null, last:0, busy:false, err:null };
+let syncTimer = null;
+
+const snapshot = () => ({ sessions:S.sessions, body:S.body, posture:S.posture, prefs:S.prefs });
+
+function applyMerged(m){
+  S.sessions = m.sessions || [];
+  S.body     = m.body || [];
+  S.posture  = m.posture || {};
+  if (m.prefs) S.prefs = { unit: m.prefs.unit === "lb" ? "lb" : "kg",
+                           tape: m.prefs.tape === "cm" ? "cm" : "in",
+                           ex: m.prefs.ex || {}, updatedAt: m.prefs.updatedAt || 0 };
+  ["sessions","body","posture","prefs"].forEach(k => DB.set("t:" + k, JSON.stringify(S[k])));
+}
+
+function queueSync(){
+  if (SY.mode !== "on" || !window.CloudSync) return;
+  setDot("wait");
+  clearTimeout(syncTimer);
+  syncTimer = setTimeout(() => window.CloudSync.push(), 1200);
+}
+
+function setDot(kind){
+  const d = $("syncdot");
+  if (!d) return;
+  d.className = "syncdot" + (SY.mode === "off" ? "" : " on " + kind);
+}
+
+/* bridge for the Firebase module, which lives in its own module scope */
+window.__app = {
+  snapshot, applyMerged, mergeState: null,
+  onStatus(patch){
+    Object.assign(SY, patch);
+    setDot(SY.err ? "err" : SY.busy ? "wait" : "ok");
+    if (SY.err && SY.errToast){ toast(SY.err); SY.errToast = false; }
+    if (tab === "body") renderBody();
+    else if (patch.pulled) render();
+  }
+};
+window.addEventListener("online", () => { if (SY.mode === "on" && window.CloudSync) window.CloudSync.push(); });
+
+/* ============ merge ============ */
+/* Two devices editing the same log will conflict. Merging per record rather
+   than per blob means a stale laptop can't erase a fresh gym session.
+   Ties go to local, which is the device the person is actually holding.   */
+function newerOf(a, b, stamp){
+  if (!a) return b;
+  if (!b) return a;
+  return (stamp(b) > stamp(a)) ? b : a;
+}
+
+function mergeState(local, remote){
+  const ts = x => x.updatedAt || 0;
+
+  const sess = new Map();
+  (remote.sessions || []).forEach(x => { if (x && x.id) sess.set(x.id, x); });
+  (local.sessions  || []).forEach(x => { if (x && x.id) sess.set(x.id, newerOf(sess.get(x.id), x, ts)); });
+
+  const body = new Map();
+  (remote.body || []).forEach(x => { if (x && x.date) body.set(x.date, x); });
+  (local.body  || []).forEach(x => { if (x && x.date) body.set(x.date, newerOf(body.get(x.date), x, ts)); });
+
+  const post = {};
+  const pts = o => (o && o.ts) || 0;
+  [remote.posture || {}, local.posture || {}].forEach(src => {
+    Object.entries(src).forEach(([k, v]) => {
+      const norm = Array.isArray(v) ? { items: v, ts: 1 } : v;
+      post[k] = newerOf(post[k], norm, pts);
+    });
+  });
+
+  const rp = remote.prefs || {}, lp = local.prefs || {};
+  const prefs = (rp.updatedAt || 0) > (lp.updatedAt || 0) ? rp : lp;
+
+  return {
+    sessions: [...sess.values()].sort((a, b) =>
+      (a.date || "").localeCompare(b.date || "") || String(a.id).localeCompare(String(b.id))),
+    body: [...body.values()].sort((a, b) => a.date.localeCompare(b.date)),
+    posture: post,
+    prefs
+  };
+}
+
+/* deleted sessions stay as tombstones so the delete propagates instead of
+   being undone by the other device pushing its copy back */
+const liveSessions = () => S.sessions.filter(x => !x.deleted);
+window.__app.mergeState = mergeState;
 
 /* ============ helpers ============ */
 function lastFor(dayId, exId){
   for (let i = S.sessions.length - 1; i >= 0; i--){
     const s = S.sessions[i];
-    if (s.day !== dayId) continue;
+    if (s.deleted || s.day !== dayId) continue;
     const sets = (s.log || {})[exId];
     if (sets && sets.some(x => x && x.r)) return sets;
   }
@@ -392,9 +579,10 @@ function fmtLast(sets, ex){
   if (!sets) return null;
   const done = sets.filter(x => x && x.r);
   if (!done.length) return null;
-  const ws = [...new Set(done.map(x => x.w || "bw"))];
+  const u = unitFor(ex.id);
+  const ws = [...new Set(done.map(x => x.w ? showW(x, u) : "bw"))];
   const reps = done.map(x => x.r).join(",");
-  return (ws.length === 1 ? ws[0] + (ws[0]==="bw" ? "" : " kg") : "mixed") + " × " + reps;
+  return (ws.length === 1 ? ws[0] + (ws[0] === "bw" ? "" : " " + u) : "mixed") + " × " + reps;
 }
 
 function shouldBump(sets, ex){
@@ -404,12 +592,20 @@ function shouldBump(sets, ex){
   return done.every(x => Number(x.r) >= ex.hi);
 }
 
-function volume(sess){
+/* totals must normalise, or a 100 lb set and a 40 kg set get added together */
+function volumeKg(sess){
   let v = 0;
-  Object.entries(sess.log || {}).forEach(([id, sets]) => {
-    sets.forEach(x => { if (x && x.w && x.r) v += Number(x.w) * Number(x.r); });
+  Object.values(sess.log || {}).forEach(sets => {
+    sets.forEach(x => {
+      if (x && x.w && x.r) v += convert(x.w, setUnit(x), "kg") * Number(x.r);
+    });
   });
-  return Math.round(v);
+  return v;
+}
+function volumeText(sess){
+  const u = S.prefs.unit;
+  const v = u === "lb" ? convert(volumeKg(sess), "kg", "lb") : volumeKg(sess);
+  return Math.round(v).toLocaleString() + " " + u;
 }
 
 function toast(msg){
@@ -447,7 +643,7 @@ function renderToday(){
   const dayId = S.draft ? S.draft.day : null;
   $("eyebrow").textContent = dayId ? "Session in progress" : "Training log";
   $("title").textContent = dayId ? "Day " + dayId + " — " + PROGRAM[dayId].label : "Pick a day";
-  $("count").textContent = S.sessions.length;
+  $("count").textContent = liveSessions().length;
 
   let h = '<div class="days">';
   for (const k of [1,2,3,4]){
@@ -470,6 +666,7 @@ function renderToday(){
     const bump = shouldBump(prev, ex);
     const open = S.draft.open === ex.id;
     const repLabel = ex.time ? "sec" : "reps";
+    const u = unitFor(ex.id);
 
     let dots = "";
     for (let i = 0; i < ex.s; i++){
@@ -485,7 +682,7 @@ function renderToday(){
           <div class="ex-name">${esc(ex.n)}</div>
           <div class="ex-meta">${ex.s} × ${ex.lo === ex.hi ? ex.lo : ex.lo+"–"+ex.hi}${ex.time?"s":""}${ex.side ? " " + ex.side : ""}
             ${lastTxt ? ' · last <span class="last">' + esc(lastTxt) + "</span>" : ' · no history'}</div>
-          ${bump ? `<div class="flag">↑ hit every set — add 2.5 kg</div>` : ""}
+          ${bump ? `<div class="flag">↑ hit every set — add ${stepFor(u)}</div>` : ""}
         </div>
         <div class="dots">${dots}</div>
       </div>
@@ -500,8 +697,8 @@ function renderToday(){
         <div class="snum">${i+1}</div>
         <div class="fld">
           <input inputmode="decimal" data-in="w" data-ex="${ex.id}" data-set="${i}"
-            value="${c.w || ""}" placeholder="${p && p.w ? p.w : (ex.bw ? "bw" : "—")}" aria-label="Set ${i+1} weight">
-          <span class="unit">kg</span>
+            value="${c.w || ""}" placeholder="${p && p.w ? showW(p, u) : (ex.bw ? "bw" : "—")}" aria-label="Set ${i+1} weight in ${u}">
+          <span class="unit">${u}</span>
         </div>
         <div class="fld">
           <input inputmode="numeric" data-in="r" data-ex="${ex.id}" data-set="${i}"
@@ -514,11 +711,12 @@ function renderToday(){
     h += `<div class="ex-tools">
         <button class="tool" data-repeat="${ex.id}" ${prev ? "" : "disabled"}>Repeat last</button>
         <button class="tool" data-rest="${ex.rest}">Rest ${Math.floor(ex.rest/60)}:${String(ex.rest%60).padStart(2,"0")}</button>
+        ${ex.bw ? "" : `<button class="tool unitbtn" data-unit="${ex.id}" aria-label="Switch this exercise to ${u === "kg" ? "pounds" : "kilograms"}">${u} ⇄</button>`}
       </div></div></div>`;
   });
 
   const pk = "p:" + today();
-  const pdone = S.posture[pk] || [];
+  const pdone = postureItems(pk);
   h += `<div class="posture"><h3>Posture work</h3>
     <p>Daily, 6 minutes. This is what actually changes how the lower belly sits.</p>`;
   POSTURE.forEach((p, i) => {
@@ -527,7 +725,7 @@ function renderToday(){
   });
   h += "</div>";
 
-  h += `<div class="note">Double progression: when you hit the top of the rep range on <em>every</em> set, add 2.5 kg next time and start back at the bottom.${DB.mode === "memory" ? "<br><br>This browser is blocking storage, so nothing will be kept once you close the tab. Back up from the History tab before you leave." : ""}</div>`;
+  h += `<div class="note">Double progression: when you hit the top of the rep range on <em>every</em> set, add ${stepFor(S.prefs.unit)} next time and start back at the bottom.<br><br>If a machine reads in the other unit, tap the <em>${S.prefs.unit} ⇄</em> button on that exercise — it only changes that one, and it remembers.${DB.mode === "memory" ? "<br><br>This browser is blocking storage, so nothing will be kept once you close the tab. Back up from the History tab before you leave." : ""}</div>`;
 
   $("view").innerHTML = h;
   $("finishbar").style.display = "";
@@ -566,6 +764,7 @@ function bindToday(){
       if (!S.draft.log[ex]) S.draft.log[ex] = new Array(d.s).fill(null);
       const row = S.draft.log[ex][set] || {};
       row[k] = val;
+      row.u = unitFor(ex);
       S.draft.log[ex][set] = row;
       save(["draft"]);
 
@@ -582,8 +781,24 @@ function bindToday(){
       const id = b.dataset.repeat;
       const prev = lastFor(S.draft.day, id);
       if (!prev) return;
-      S.draft.log[id] = prev.map(x => x ? { w:x.w, r:x.r } : null);
+      const u = unitFor(id);
+      S.draft.log[id] = prev.map(x => x ? { w: showW(x, u), r: x.r, u } : null);
       save(["draft"]); renderToday(); toast("Filled from last session");
+    };
+  });
+
+  document.querySelectorAll("[data-unit]").forEach(b => {
+    b.onclick = e => {
+      e.stopPropagation();
+      const id = b.dataset.unit;
+      const from = unitFor(id), to = from === "kg" ? "lb" : "kg";
+      S.prefs.ex[id] = to;
+      S.prefs.updatedAt = Date.now();
+      // anything already typed this session gets converted, not reinterpreted
+      const rows = S.draft.log[id];
+      if (rows) S.draft.log[id] = rows.map(x =>
+        x ? { ...x, w: x.w ? tidy(convert(x.w, setUnit(x), to), to) : x.w, u: to } : null);
+      save(["prefs", "draft"]); renderToday(); toast("Now logging in " + to);
     };
   });
 
@@ -594,9 +809,9 @@ function bindToday(){
   document.querySelectorAll("[data-p]").forEach(el => {
     el.onclick = () => {
       const i = Number(el.dataset.p), pk = "p:" + today();
-      const arr = S.posture[pk] || [];
-      S.posture[pk] = arr.includes(i) ? arr.filter(x => x !== i) : [...arr, i];
-      save(["posture"]); renderToday();
+      const arr = postureItems(pk);
+      S.posture[pk] = { items: arr.includes(i) ? arr.filter(x => x !== i) : [...arr, i], ts: Date.now() };
+      save(["posture"]); queueSync(); renderToday();
     };
   });
 }
@@ -608,6 +823,8 @@ $("finishbtn").onclick = () => {
     if (!d.log[k].some(Boolean)) delete d.log[k];
   });
   d.date = today();
+  d.id = d.date + "-d" + d.day + "-" + Math.random().toString(36).slice(2, 8);
+  d.updatedAt = Date.now();
   S.sessions.push(d);
   S.draft = null;
   save(["sessions", "draft"]);
@@ -620,15 +837,15 @@ $("finishbtn").onclick = () => {
 function renderHistory(){
   $("eyebrow").textContent = "History";
   $("title").textContent = "Past sessions";
-  $("count").textContent = S.sessions.length;
+  $("count").textContent = liveSessions().length;
   $("finishbar").style.display = "none";
 
   let h = "";
-  if (!S.sessions.length){
+  if (!liveSessions().length){
     h += `<div class="empty">Nothing logged yet.<br>Finish a session and it'll show up here.</div>`;
   }
-  [...S.sessions].reverse().forEach((s, ri) => {
-    const idx = S.sessions.length - 1 - ri;
+  [...liveSessions()].reverse().forEach(s => {
+    const idx = s.id;
     const P = PROGRAM[s.day];
     const sets = Object.values(s.log).reduce((a, b) => a + b.filter(Boolean).length, 0);
     h += `<div class="rec" data-rec="${idx}">
@@ -637,15 +854,16 @@ function renderHistory(){
           <div class="rec-day">Day ${s.day} — ${P.label}</div>
           <div class="rec-date">${s.date}</div>
         </div>
-        <div class="rec-vol">${sets} sets · ${volume(s).toLocaleString()} kg total volume</div>
+        <div class="rec-vol">${sets} sets · ${volumeText(s)} total volume</div>
       </div>
       <div class="rec-lines">`;
     P.ex.forEach(ex => {
       const l = s.log[ex.id]; if (!l) return;
       const done = l.filter(Boolean);
-      const ws = [...new Set(done.map(x => x.w || "bw"))];
+      // history shows what she actually entered at the time, not a re-conversion
+      const ws = [...new Set(done.map(x => x.w ? x.w + " " + setUnit(x) : "bw"))];
       h += `<div class="rline"><span class="rn">${esc(ex.n)}</span>
-        <span class="rv">${ws.length===1 ? esc(ws[0]) + (ws[0]==="bw"?"":" kg") : "mixed"} × ${done.map(x => x.r).join(",")}</span></div>`;
+        <span class="rv">${ws.length === 1 ? esc(ws[0]) : "mixed"} × ${done.map(x => x.r).join(",")}</span></div>`;
     });
     h += `<button class="del" data-del="${idx}">Delete this session</button></div></div>`;
   });
@@ -665,7 +883,7 @@ function renderHistory(){
   $("view").innerHTML = h;
 
   $("expbtn").onclick = () => {
-    const data = { v:1, exported:today(), sessions:S.sessions, body:S.body, posture:S.posture };
+    const data = { v:2, exported:today(), sessions:S.sessions, body:S.body, posture:S.posture, prefs:S.prefs };
     const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type:"application/json" }));
     const a = document.createElement("a");
     a.href = url; a.download = "training-log-" + today() + ".json";
@@ -688,7 +906,12 @@ function renderHistory(){
       S.sessions = d.sessions;
       S.body = Array.isArray(d.body) ? d.body : [];
       S.posture = d.posture && typeof d.posture === "object" ? d.posture : {};
-      save(["sessions","body","posture"]);
+      if (d.prefs && typeof d.prefs === "object"){
+        S.prefs = { unit: d.prefs.unit === "lb" ? "lb" : "kg",
+                    tape: d.prefs.tape === "cm" ? "cm" : "in",
+                    ex: (d.prefs.ex && typeof d.prefs.ex === "object") ? d.prefs.ex : {} };
+      }
+      save(["sessions","body","posture","prefs"]);
       renderHistory(); toast("Backup restored");
     };
     rd.readAsText(f);
@@ -701,19 +924,30 @@ function renderHistory(){
     b.onclick = e => {
       e.stopPropagation();
       if (!confirm("Delete this session? It can't be undone.")) return;
-      S.sessions.splice(Number(b.dataset.del), 1);
-      save(["sessions"]); renderHistory(); toast("Session deleted");
+      const t = S.sessions.find(x => x.id === b.dataset.del);
+      if (t){ t.deleted = true; t.updatedAt = Date.now(); }
+      save(["sessions"]); queueSync(); renderHistory(); toast("Session deleted");
     };
   });
 }
 
 /* ============ body ============ */
 const MF = [
-  {k:"hip",   l:"Hips (widest)", ph:"36"},
-  {k:"thigh", l:"Thigh",         ph:"—"},
-  {k:"waist", l:"Waist (small)", ph:"28"},
-  {k:"wt",    l:"Weight kg",     ph:"49"}
+  {k:"hip",   l:"Hips (widest)", ph:"36", t:"tape"},
+  {k:"thigh", l:"Thigh",         ph:"—",  t:"tape"},
+  {k:"waist", l:"Waist (small)", ph:"28", t:"tape"},
+  {k:"wt",    l:"Weight",        ph:"49", t:"wt"}
 ];
+
+const recUnit = (m, f) => f.t === "wt" ? (m.wu === "lb" ? "lb" : "kg")
+                                       : (m.tu === "cm" ? "cm" : "in");
+const prefUnit = f => f.t === "wt" ? S.prefs.unit : S.prefs.tape;
+
+function bodyVal(m, f, to){
+  if (!m[f.k]) return null;
+  return f.t === "wt" ? convert(m[f.k], recUnit(m, f), to)
+                      : convTape(m[f.k], recUnit(m, f), to);
+}
 
 function renderBody(){
   $("eyebrow").textContent = "Measurements";
@@ -723,37 +957,74 @@ function renderBody(){
 
   let h = `<div class="mform"><div class="mgrid">`;
   MF.forEach(f => {
-    h += `<div class="mf"><label for="m-${f.k}">${f.l}</label>
+    h += `<div class="mf"><label for="m-${f.k}">${f.l} (${prefUnit(f)})</label>
       <input id="m-${f.k}" inputmode="decimal" placeholder="${f.ph}"></div>`;
   });
   h += `</div><button id="msave">Save today's numbers</button></div>`;
 
   if (S.body.length > 1){
-    const a = S.body[0], b = S.body[S.body.length - 1];
-    const d = (k) => {
-      if (!a[k] || !b[k]) return "—";
-      const v = (Number(b[k]) - Number(a[k])).toFixed(1);
+    const A = S.body[0], B = S.body[S.body.length - 1];
+    const d = f => {
+      const u = prefUnit(f);
+      const a = bodyVal(A, f, u), b = bodyVal(B, f, u);
+      if (a === null || b === null) return "—";
+      const v = (b - a).toFixed(1);
       return (v > 0 ? "+" : "") + v;
     };
-    h += `<div class="note">Since ${a.date} — hips <em>${d("hip")}</em> · thigh <em>${d("thigh")}</em> · waist <em>${d("waist")}</em> · weight <em>${d("wt")}</em></div>`;
+    h += `<div class="note">Since ${A.date} — hips <em>${d(MF[0])}</em> · thigh <em>${d(MF[1])}</em> · waist <em>${d(MF[2])}</em> ${S.prefs.tape} · weight <em>${d(MF[3])}</em> ${S.prefs.unit}</div>`;
   }
 
   if (!S.body.length){
     h += `<div class="empty">No measurements yet.<br>Take them once a month, same time of day, before eating.</div>`;
   } else {
-    [...S.body].reverse().forEach((m, ri) => {
-      const idx = S.body.length - 1 - ri;
-      const parts = MF.filter(f => m[f.k]).map(f => f.k === "wt" ? m.wt + " kg" : f.l.split(" ")[0].toLowerCase() + " " + m[f.k]);
+    [...S.body].reverse().forEach(m => {
+      const parts = MF.filter(f => m[f.k]).map(f =>
+        (f.t === "wt" ? "" : f.l.split(" ")[0].toLowerCase() + " ") + m[f.k] + " " + recUnit(m, f));
       h += `<div class="mrow"><span class="md">${m.date}</span>
         <span class="mv">${esc(parts.join("  ·  "))}</span></div>`;
     });
   }
 
-  h += `<div class="note">Inches for the tape, kg for the scale. Hips and thigh going up while waist holds steady is the plan working — the scale number will drift up and that's fine.</div>`;
+  const overrides = Object.keys(S.prefs.ex).length;
+  h += `<div class="panel"><h3>Units</h3>
+    <p>The default for weights and measurements. Individual exercises can be switched from their own card — useful when one machine is in lb and the rest of the gym is in kg.</p>
+    <div class="seglab">Weight</div>
+    <div class="seg">
+      <button class="segb" data-pref="unit" data-val="kg" aria-pressed="${S.prefs.unit === "kg"}">kg</button>
+      <button class="segb" data-pref="unit" data-val="lb" aria-pressed="${S.prefs.unit === "lb"}">lb</button>
+    </div>
+    <div class="seglab">Tape</div>
+    <div class="seg">
+      <button class="segb" data-pref="tape" data-val="in" aria-pressed="${S.prefs.tape === "in"}">inches</button>
+      <button class="segb" data-pref="tape" data-val="cm" aria-pressed="${S.prefs.tape === "cm"}">cm</button>
+    </div>
+    ${overrides ? `<button class="tool" id="clearov">Reset ${overrides} exercise override${overrides > 1 ? "s" : ""} to default</button>` : ""}
+    <div class="storenote">Past entries keep the units they were taken in</div></div>`;
+
+  h += syncPanel();
+
+  h += `<div class="note">Hips and thigh going up while the waist holds steady is the plan working — the scale number will drift up and that's fine.</div>`;
   $("view").innerHTML = h;
 
+  bindSync();
+
+  document.querySelectorAll("[data-pref]").forEach(b => {
+    b.onclick = () => {
+      S.prefs[b.dataset.pref] = b.dataset.val;
+      S.prefs.updatedAt = Date.now();
+      save(["prefs"]); queueSync(); renderBody();
+    };
+  });
+
+  const ov = $("clearov");
+  if (ov) ov.onclick = () => {
+    if (!confirm("Put every exercise back on the default unit?")) return;
+    S.prefs.ex = {};
+    save(["prefs"]); renderBody(); toast("Overrides cleared");
+  };
+
   $("msave").onclick = () => {
-    const rec = { date: today() };
+    const rec = { date: today(), wu: S.prefs.unit, tu: S.prefs.tape, updatedAt: Date.now() };
     let any = false;
     MF.forEach(f => {
       const v = $("m-" + f.k).value.trim();
@@ -763,6 +1034,49 @@ function renderBody(){
     const i = S.body.findIndex(x => x.date === rec.date);
     if (i >= 0) S.body[i] = rec; else S.body.push(rec);
     save(["body"]); renderBody(); toast("Measurements saved");
+  };
+}
+
+/* ============ sync panel ============ */
+function syncPanel(){
+  const err = SY.err ? `<div class="storenote">${esc(SY.err)}</div>` : "";
+  if (SY.mode === "off")
+    return `<div class="panel"><h3>Sync</h3>
+      <p>Not set up — the log lives on this device only. To turn it on, fill in the FIREBASE_CONFIG block at the top of index.html.</p>${err}</div>`;
+
+  if (SY.mode === "signedout")
+    return `<div class="panel"><h3>Sync</h3>
+      <p>Sign in to keep this device in step with the others.</p>
+      <div class="authrow"><input id="sy-email" type="email" inputmode="email" autocomplete="username" placeholder="email"></div>
+      <div class="authrow"><input id="sy-pass" type="password" autocomplete="current-password" placeholder="password"></div>
+      <button class="tool" id="sy-in">Sign in</button>${err}</div>`;
+
+  const mins = SY.last ? Math.round((Date.now() - SY.last) / 60000) : null;
+  const when = SY.busy ? "syncing…"
+             : mins === null ? "not synced yet"
+             : mins <= 0 ? "synced just now" : "synced " + mins + "m ago";
+  return `<div class="panel"><h3>Sync</h3>
+    <p>Signed in as ${esc(SY.email || "")}. Changes save here first, then mirror to the cloud — logging still works with no signal.</p>
+    <div class="ex-tools">
+      <button class="tool" id="sy-now" ${SY.busy ? "disabled" : ""}>Sync now</button>
+      <button class="tool" id="sy-out">Sign out</button>
+    </div>
+    <div class="storenote">${SY.err ? esc(SY.err) : when}</div></div>`;
+}
+
+function bindSync(){
+  const inb = $("sy-in");
+  if (inb) inb.onclick = () => {
+    const e = $("sy-email").value.trim(), pw = $("sy-pass").value;
+    if (!e || !pw){ toast("Enter email and password"); return; }
+    window.CloudSync && window.CloudSync.signIn(e, pw);
+  };
+  const now = $("sy-now");
+  if (now) now.onclick = () => window.CloudSync && window.CloudSync.push();
+  const out = $("sy-out");
+  if (out) out.onclick = () => {
+    if (!confirm("Sign out? Your log stays on this device.")) return;
+    window.CloudSync && window.CloudSync.signOut();
   };
 }
 
@@ -783,6 +1097,92 @@ document.querySelectorAll(".tab").forEach(b => {
 });
 
 load().then(render);
+</script>
+
+<script type="module">
+/* Cloud sync. Optional: with no config the app is untouched and local-only. */
+(async () => {
+  const app = window.__app;
+  const cfg = window.FIREBASE_CONFIG || {};
+  if (!cfg.apiKey || !cfg.projectId){ app.onStatus({ mode:"off" }); return; }
+
+  const V = "https://www.gstatic.com/firebasejs/11.0.2/";
+  let A, B, C;
+  try {
+    [A, B, C] = await Promise.all([
+      import(V + "firebase-app.js"),
+      import(V + "firebase-auth.js"),
+      import(V + "firebase-firestore.js")
+    ]);
+  } catch (e){
+    app.onStatus({ mode:"off", err:"Couldn't load Firebase — check your connection.", errToast:true });
+    return;
+  }
+
+  const fbApp = A.initializeApp(cfg);
+  const auth  = B.getAuth(fbApp);
+  const db    = C.getFirestore(fbApp);
+  let uid = null, busy = false;
+
+  try { await B.setPersistence(auth, B.browserLocalPersistence); } catch (e){}
+
+  const friendly = e => {
+    const c = (e && e.code) || "";
+    if (c.includes("invalid-credential") || c.includes("wrong-password") || c.includes("user-not-found"))
+      return "Email or password is wrong.";
+    if (c.includes("invalid-email"))      return "That email doesn't look right.";
+    if (c.includes("too-many-requests"))  return "Too many tries — wait a minute.";
+    if (c.includes("network"))            return "No connection — saved here, will sync later.";
+    if (c.includes("unavailable"))        return "Offline — saved here, will sync later.";
+    if (c.includes("permission-denied"))  return "Firestore rules are blocking this account.";
+    return (e && e.message) ? e.message.replace(/^Firebase:\s*/, "") : "Sync failed.";
+  };
+
+  /* One transaction does read + merge + write, so two devices saving at the
+     same moment serialise instead of overwriting each other.               */
+  async function push(){
+    if (!uid || busy) return;
+    busy = true;
+    app.onStatus({ busy:true, err:null });
+    try {
+      const ref = C.doc(db, "users", uid);
+      const merged = await C.runTransaction(db, async tx => {
+        const snap = await tx.get(ref);
+        let remote = {};
+        if (snap.exists()){
+          try { remote = JSON.parse(snap.data().blob || "{}"); } catch (e){ remote = {}; }
+        }
+        const m = app.mergeState(app.snapshot(), remote);
+        tx.set(ref, { blob: JSON.stringify(m), updatedAt: Date.now() });
+        return m;
+      });
+      app.applyMerged(merged);
+      busy = false;
+      app.onStatus({ mode:"on", busy:false, last:Date.now(), err:null, pulled:true });
+    } catch (e){
+      busy = false;
+      app.onStatus({ busy:false, err:friendly(e), errToast:true });
+    }
+  }
+
+  window.CloudSync = {
+    push,
+    async signIn(email, pw){
+      app.onStatus({ busy:true, err:null });
+      try { await B.signInWithEmailAndPassword(auth, email, pw); }
+      catch (e){ app.onStatus({ busy:false, err:friendly(e), errToast:true }); }
+    },
+    async signOut(){
+      try { await B.signOut(auth); } catch (e){}
+    }
+  };
+
+  B.onAuthStateChanged(auth, u => {
+    uid = u ? u.uid : null;
+    if (u){ app.onStatus({ mode:"on", email:u.email, err:null }); push(); }
+    else  { app.onStatus({ mode:"signedout", email:null, last:0 }); }
+  });
+})();
 </script>
 </body>
 </html>
