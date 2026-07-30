@@ -477,70 +477,209 @@ const CUES = {
    0.jpg is the start of the rep, 1.jpg the finish, which is what makes the
    two-frame loop possible. Served via jsDelivr — raw.githubusercontent
    throttles and isn't meant for hotlinking. Paths verified against the repo. */
-const RIG = {"squat":{"label":"Squat","props":[],"a":{"ankle":[49.02,93.0],"knee":[49.92,71.24],"hip":[48.93,49.49],"shoulder":[49.97,22.55],"elbow":[45.04,37.3],"hand":[53.54,50.33],"head":[50.33,13.22]},"b":{"ankle":[49.02,93.0],"knee":[57.47,72.93],"hip":[39.06,61.3],"shoulder":[50.69,36.98],"elbow":[44.24,51.14],"hand":[56.62,60.56],"head":[54.72,28.56]},"floor":93.0,"headR":6.22},"hackSquat":{"label":"Machine squat","props":[{"t":"line","p":[65.43,16.88,34.57,93.0],"w":3}],"a":{"ankle":[38.69,90.94],"knee":[42.55,69.69],"hip":[46.59,48.47],"shoulder":[51.84,22.25],"elbow":[46.66,36.78],"hand":[44.12,52.0],"head":[53.65,13.17]},"b":{"ankle":[38.69,90.94],"knee":[53.25,74.99],"hip":[39.2,58.59],"shoulder":[44.44,32.37],"elbow":[39.26,46.9],"hand":[36.27,62.04],"head":[46.26,23.29]},"floor":93.0,"headR":6.17},"legPress":{"label":"Leg press","props":[{"t":"line","p":[20.63,35.83,34.79,87.75],"w":3},{"t":"pad","p":[77.27,26.39,11.8,30.68]}],"a":{"ankle":[80.99,39.34],"knee":[57.43,47.01],"hip":[34.79,57.07],"shoulder":[22.33,29.03],"elbow":[34.73,41.66],"hand":[51.67,46.82],"head":[18.01,19.33]},"b":{"ankle":[64.06,28.69],"knee":[59.23,53.0],"hip":[34.79,57.07],"shoulder":[22.33,29.03],"elbow":[34.73,41.66],"hand":[51.67,46.82],"head":[18.01,19.33]},"headR":7.08},"splitSquat":{"label":"Split squat","props":[{"t":"box","p":[25.54,74.33,18.67,5.18]}],"a":{"ankle":[67.03,93.0],"knee":[67.02,71.22],"hip":[64.95,49.53],"shoulder":[64.95,22.56],"elbow":[60.03,37.32],"hand":[61.52,52.81],"bAnkle":[34.65,76.75],"bKnee":[54.96,68.89],"head":[64.95,13.22]},"b":{"ankle":[67.03,93.0],"knee":[74.46,72.52],"hip":[60.86,55.51],"shoulder":[58.79,28.62],"elbow":[53.83,43.37],"hand":[55.38,58.86],"bAnkle":[29.37,73.65],"bKnee":[51.11,75.0],"head":[58.07,19.31]},"floor":93.0,"headR":6.22},"lunge":{"label":"Lunge","props":[],"a":{"ankle":[52.5,91.73],"knee":[53.39,70.3],"hip":[52.42,48.88],"shoulder":[52.42,22.32],"elbow":[47.57,36.85],"hand":[49.03,52.11],"bAnkle":[46.53,91.33],"bKnee":[48.65,69.99],"head":[52.42,13.13]},"b":{"ankle":[64.76,91.73],"knee":[68.83,70.67],"hip":[53.07,56.13],"shoulder":[53.07,29.57],"elbow":[48.22,44.1],"hand":[49.68,59.35],"bAnkle":[31.17,93.0],"bKnee":[41.7,74.31],"head":[53.07,20.38]},"floor":91.73,"headR":6.13},"stepUp":{"label":"Step-up","props":[{"t":"box","p":[43.35,76.98,23.65,15.19]}],"a":{"ankle":[53.49,76.98],"knee":[62.86,61.93],"hip":[45.27,59.73],"shoulder":[41.8,38.05],"elbow":[38.08,50.16],"hand":[38.86,62.8],"bAnkle":[33.0,93.0],"bKnee":[39.21,76.39],"head":[40.6,30.55]},"b":{"ankle":[53.49,76.98],"knee":[53.48,59.25],"hip":[51.8,41.59],"shoulder":[50.95,19.66],"elbow":[46.94,31.67],"hand":[48.16,44.28],"bAnkle":[37.41,73.99],"bKnee":[44.17,57.6],"head":[50.66,12.07]},"floor":92.17,"headR":5.07},"hinge":{"label":"Hip hinge","props":[{"t":"barHand"}],"a":{"ankle":[37.19,93.0],"knee":[38.09,71.25],"hip":[37.11,49.5],"shoulder":[37.11,22.55],"elbow":[37.11,38.1],"hand":[37.11,53.65],"head":[37.11,13.22]},"b":{"ankle":[37.19,93.0],"knee":[36.97,71.23],"hip":[30.99,50.3],"shoulder":[54.69,37.46],"elbow":[55.84,52.97],"hand":[55.87,68.52],"head":[62.89,33.02]},"floor":93.0,"headR":6.22},"pullThrough":{"label":"Pull-through","props":[{"t":"cable","p":[12.0,88.85]}],"a":{"ankle":[55.53,93.0],"knee":[55.31,71.23],"hip":[49.33,50.3],"shoulder":[73.44,38.25],"elbow":[66.53,52.18],"hand":[57.06,64.51],"head":[81.79,34.07]},"b":{"ankle":[55.53,93.0],"knee":[56.43,71.25],"hip":[55.45,49.5],"shoulder":[55.45,22.55],"elbow":[53.52,37.98],"hand":[53.37,53.53],"head":[55.45,13.22]},"floor":93.0,"headR":6.22},"backExt":{"label":"Back extension","props":[{"t":"line","p":[23.2,67.82,53.88,37.14],"w":3},{"t":"pad","p":[18.48,60.74,14.16,5.9]}],"a":{"ankle":[11.76,76.91],"knee":[29.28,59.39],"hip":[46.8,41.86],"shoulder":[37.1,70.97],"elbow":[46.02,55.68],"hand":[59.87,44.66],"head":[33.74,81.04]},"b":{"ankle":[11.76,76.91],"knee":[29.28,59.39],"hip":[46.8,41.86],"shoulder":[72.33,24.85],"elbow":[64.05,40.49],"hand":[56.08,56.3],"head":[81.16,18.96]},"headR":7.08},"hipThrust":{"label":"Hip thrust","props":[{"t":"box","p":[17.82,36.02,28.32,5.9]},{"t":"barHip"}],"a":{"ankle":[86.26,78.5],"knee":[78.53,54.96],"hip":[55.52,64.16],"shoulder":[33.83,42.46],"elbow":[46.34,54.98],"hand":[63.26,60.19],"head":[26.32,34.96]},"b":{"ankle":[86.26,78.5],"knee":[81.71,54.14],"hip":[58.42,45.67],"shoulder":[30.49,32.98],"elbow":[43.61,44.86],"hand":[61.17,42.68],"head":[20.82,28.58]},"floor":78.5,"headR":7.08},"bridge1":{"label":"Single-leg bridge","props":[{"t":"box","p":[10.79,36.99,26.35,5.49]}],"a":{"ankle":[74.46,76.51],"knee":[67.26,54.61],"hip":[45.86,63.17],"shoulder":[25.68,42.99],"elbow":[37.32,54.63],"hand":[53.06,59.48],"bAnkle":[90.99,56.6],"bKnee":[67.94,56.55],"head":[18.7,36.01]},"b":{"ankle":[74.46,76.51],"knee":[70.22,53.85],"hip":[48.56,45.97],"shoulder":[22.58,34.16],"elbow":[34.78,45.22],"hand":[51.12,43.19],"bAnkle":[93.0,34.07],"bKnee":[71.16,41.45],"head":[13.59,30.08]},"floor":76.51,"headR":6.59},"legCurl":{"label":"Leg curl","props":[{"t":"box","p":[34.39,54.75,35.58,5.23]}],"a":{"ankle":[93.0,56.84],"knee":[71.02,56.84],"hip":[49.04,56.84],"shoulder":[22.48,50.94],"elbow":[35.78,59.27],"hand":[50.86,63.65],"head":[13.28,48.89]},"b":{"ankle":[78.99,36.35],"knee":[71.02,56.84],"hip":[49.04,56.84],"shoulder":[22.48,50.94],"elbow":[35.78,59.27],"hand":[50.86,63.65],"head":[13.28,48.89]},"headR":6.28},"calfRaise":{"label":"Calf raise","props":[{"t":"box","p":[38.47,87.68,23.06,5.32]}],"a":{"ankle":[49.11,87.68],"knee":[49.11,69.06],"hip":[49.11,50.44],"shoulder":[49.11,27.39],"elbow":[44.91,40.01],"hand":[46.17,53.25],"head":[49.11,19.41]},"b":{"ankle":[49.11,80.59],"knee":[49.11,61.97],"hip":[49.11,43.35],"shoulder":[49.11,20.3],"elbow":[44.91,32.92],"hand":[46.17,46.15],"head":[49.11,12.32]},"floor":87.68,"headR":5.32},"pulldown":{"label":"Vertical pull","props":[{"t":"box","p":[29.62,71.2,27.82,5.35]},{"t":"cable","p":[48.88,7.0]}],"a":{"ankle":[70.38,93.0],"knee":[64.93,71.2],"hip":[42.46,71.2],"shoulder":[44.59,43.46],"elbow":[46.58,27.54],"hand":[48.83,11.64],"head":[45.33,33.86]},"b":{"ankle":[70.38,93.0],"knee":[64.93,71.2],"hip":[42.46,71.2],"shoulder":[42.46,43.38],"elbow":[52.74,31.05],"hand":[48.6,46.56],"head":[42.46,33.75]},"headR":6.42},"pullup":{"label":"Pull-up","props":[{"t":"line","p":[25.31,25.04,74.69,25.04],"w":3}],"a":{"ankle":[55.48,93.0],"knee":[53.57,73.15],"hip":[50.0,53.53],"shoulder":[50.0,28.84],"elbow":[50.0,43.08],"hand":[50.0,28.84],"head":[50.0,20.29]},"b":{"ankle":[57.82,85.04],"knee":[53.91,65.49],"hip":[50.0,45.93],"shoulder":[50.0,21.24],"elbow":[58.9,32.37],"hand":[47.9,23.31],"head":[50.0,12.7]},"headR":5.7},"row":{"label":"Horizontal pull","props":[{"t":"box","p":[11.06,62.42,30.68,5.9]},{"t":"cable","p":[88.94,43.54]}],"a":{"ankle":[58.19,85.81],"knee":[50.0,62.42],"hip":[25.22,62.42],"shoulder":[34.92,33.32],"elbow":[51.9,38.34],"hand":[69.05,42.69],"head":[38.28,23.24]},"b":{"ankle":[58.19,85.81],"knee":[50.0,62.42],"hip":[25.22,62.42],"shoulder":[27.77,31.85],"elbow":[39.04,45.5],"hand":[56.58,43.13],"head":[28.65,21.27]},"headR":7.08},"benchPress":{"label":"Press, lying","props":[{"t":"box","p":[23.05,52.37,51.92,5.9]},{"t":"barHand"}],"a":{"ankle":[89.79,84.91],"knee":[81.45,61.57],"hip":[58.45,52.37],"shoulder":[27.87,49.82],"elbow":[30.29,32.29],"hand":[45.24,22.81],"head":[17.29,48.94]},"b":{"ankle":[89.79,84.91],"knee":[81.45,61.57],"hip":[58.45,52.37],"shoulder":[27.87,49.82],"elbow":[32.11,32.64],"hand":[34.47,15.09],"head":[17.29,48.94]},"headR":7.08},"shoulderPress":{"label":"Overhead press","props":[{"t":"box","p":[29.64,70.01,29.33,5.64]},{"t":"barHand"}],"a":{"ankle":[70.36,93.0],"knee":[64.62,70.01],"hip":[40.92,70.01],"shoulder":[40.92,40.68],"elbow":[56.98,46.03],"hand":[54.45,29.3],"head":[40.92,30.52]},"b":{"ankle":[70.36,93.0],"knee":[64.62,70.01],"hip":[40.92,70.01],"shoulder":[40.92,40.68],"elbow":[43.31,23.92],"hand":[43.16,7.0],"head":[40.92,30.52]},"headR":6.77},"lateralRaise":{"label":"Lateral raise","props":[],"a":{"ankle":[46.03,93.0],"knee":[45.25,71.12],"hip":[50.0,49.75],"shoulder":[50.0,22.64],"elbow":[38.94,33.7],"hand":[37.32,49.25],"bElbow":[61.06,33.7],"bHand":[62.68,49.25],"head":[50.0,13.26]},"b":{"ankle":[46.03,93.0],"knee":[45.25,71.12],"hip":[50.0,49.75],"shoulder":[50.0,22.64],"elbow":[34.36,22.64],"hand":[18.72,22.64],"bElbow":[65.64,22.64],"bHand":[81.28,22.64],"head":[50.0,13.26]},"floor":93.0,"headR":6.26,"front":true},"facePull":{"label":"Rear-delt pull","props":[{"t":"cable","p":[76.37,32.9]}],"a":{"ankle":[32.86,93.0],"knee":[32.86,71.24],"hip":[32.86,49.48],"shoulder":[32.86,22.54],"elbow":[46.35,30.25],"hand":[61.22,34.78],"head":[32.86,13.22]},"b":{"ankle":[32.86,93.0],"knee":[32.86,71.24],"hip":[32.86,49.48],"shoulder":[30.62,22.64],"elbow":[45.55,18.32],"hand":[30.23,20.91],"head":[29.84,13.34]},"floor":93.0,"headR":6.22},"curl":{"label":"Curl","props":[],"a":{"ankle":[46.89,93.0],"knee":[46.89,71.24],"hip":[46.89,49.48],"shoulder":[46.89,22.54],"elbow":[46.89,38.08],"hand":[46.89,53.63],"head":[46.89,13.22]},"b":{"ankle":[46.89,93.0],"knee":[46.89,71.24],"hip":[46.89,49.48],"shoulder":[46.89,22.54],"elbow":[46.89,38.08],"hand":[59.33,28.76],"head":[46.89,13.22]},"floor":93.0,"headR":6.22},"pushdown":{"label":"Triceps pushdown","props":[{"t":"cable","p":[48.84,9.99]}],"a":{"ankle":[48.84,93.0],"knee":[48.84,71.21],"hip":[48.84,49.42],"shoulder":[46.59,22.53],"elbow":[48.46,37.99],"hand":[60.41,28.01],"head":[45.82,13.23]},"b":{"ankle":[48.84,93.0],"knee":[48.84,71.21],"hip":[48.84,49.42],"shoulder":[46.59,22.53],"elbow":[48.46,37.99],"hand":[50.38,53.43],"head":[45.82,13.23]},"floor":93.0,"headR":6.23},"overheadExt":{"label":"Overhead extension","props":[],"a":{"ankle":[48.52,93.0],"knee":[48.52,74.57],"hip":[48.52,56.14],"shoulder":[48.52,33.33],"elbow":[48.52,20.16],"hand":[56.74,30.44],"head":[48.52,25.43]},"b":{"ankle":[48.52,93.0],"knee":[48.52,74.57],"hip":[48.52,56.14],"shoulder":[48.52,33.33],"elbow":[48.52,20.16],"hand":[48.52,7.0],"head":[48.52,25.43]},"floor":93.0,"headR":5.27},"deadBug":{"label":"Dead bug","props":[],"a":{"ankle":[74.04,33.92],"knee":[81.63,54.7],"hip":[62.42,65.67],"shoulder":[35.03,65.67],"elbow":[36.99,49.99],"hand":[37.14,34.19],"bAnkle":[60.86,36.12],"bKnee":[78.07,50.03],"head":[25.55,65.67]},"b":{"ankle":[93.0,48.67],"knee":[70.91,49.79],"hip":[50.19,57.56],"shoulder":[22.8,57.56],"elbow":[15.74,43.42],"hand":[7.44,29.97],"bAnkle":[48.63,28.01],"bKnee":[65.83,41.91],"head":[13.32,57.56]},"floor":61.31,"headR":6.32},"reverseCrunch":{"label":"Reverse crunch","props":[],"a":{"ankle":[92.53,32.36],"knee":[93.0,55.94],"hip":[72.52,67.64],"shoulder":[43.31,67.64],"elbow":[48.64,51.66],"hand":[63.59,43.89],"head":[33.2,67.64]},"b":{"ankle":[74.55,25.62],"knee":[51.67,31.34],"hip":[51.67,54.93],"shoulder":[23.49,62.61],"elbow":[29.7,46.94],"hand":[43.84,37.79],"head":[13.74,65.27]},"floor":61.56,"headR":6.74},"hangingRaise":{"label":"Hanging raise","props":[{"t":"line","p":[21.04,20.47,74.92,20.47],"w":3}],"a":{"ankle":[47.98,93.0],"knee":[47.98,71.24],"hip":[47.98,49.48],"shoulder":[47.98,22.54],"elbow":[47.98,38.08],"hand":[47.98,22.54],"head":[47.98,13.22]},"b":{"ankle":[78.96,49.69],"knee":[63.37,64.87],"hip":[47.98,49.48],"shoulder":[47.98,22.54],"elbow":[47.98,38.08],"hand":[47.98,22.54],"head":[47.98,13.22]},"headR":6.22},"plank":{"label":"Plank","props":[],"a":{"ankle":[93.0,65.93],"knee":[70.81,61.29],"hip":[49.31,54.13],"shoulder":[22.69,45.25],"elbow":[21.18,61.37],"hand":[37.28,63.09],"head":[13.48,42.18]},"b":{"ankle":[93.0,65.93],"knee":[71.45,58.91],"hip":[50.74,49.71],"shoulder":[23.51,42.9],"elbow":[22.74,59.07],"hand":[38.34,63.42],"head":[14.09,40.55]},"floor":65.93,"headR":6.48},"sidePlank":{"label":"Side plank","props":[],"a":{"ankle":[93.0,71.26],"knee":[70.79,63.86],"hip":[48.58,56.46],"shoulder":[22.66,43.5],"elbow":[19.77,59.97],"hand":[35.24,66.3],"head":[13.69,39.01]},"b":{"ankle":[93.0,71.26],"knee":[71.59,61.8],"hip":[51.13,50.43],"shoulder":[24.37,39.28],"elbow":[22.71,55.92],"hand":[35.83,66.28],"head":[15.11,35.42]},"floor":71.26,"headR":6.69},"pallof":{"label":"Anti-rotation press","props":[{"t":"cable","p":[75.58,43.2]}],"a":{"ankle":[27.86,93.0],"knee":[27.86,71.21],"hip":[27.86,49.43],"shoulder":[29.93,22.53],"elbow":[42.13,32.19],"hand":[39.02,47.44],"head":[30.64,13.22]},"b":{"ankle":[27.86,93.0],"knee":[27.86,71.21],"hip":[27.86,49.43],"shoulder":[29.93,22.53],"elbow":[40.97,33.5],"hand":[55.66,38.62],"head":[30.64,13.22]},"floor":93.0,"headR":6.22,"front":true},"abduction":{"label":"Hip abduction","props":[{"t":"box","p":[31.09,51.81,41.78,5.22]}],"a":{"ankle":[40.59,93.0],"knee":[44.2,71.36],"hip":[47.8,49.72],"shoulder":[49.89,22.64],"elbow":[41.16,35.66],"hand":[41.75,51.32],"bAnkle":[57.89,88.15],"bKnee":[61.85,66.58],"head":[50.61,13.27]},"b":{"ankle":[19.71,83.43],"knee":[33.76,66.58],"hip":[47.8,49.72],"shoulder":[49.89,22.64],"elbow":[41.16,35.66],"hand":[41.75,51.32],"bAnkle":[80.29,78.59],"bKnee":[66.06,61.89],"head":[50.61,13.27]},"headR":6.27,"front":true},"carry":{"label":"Loaded carry","props":[],"a":{"ankle":[46.82,93.0],"knee":[48.8,71.29],"hip":[50.77,49.57],"shoulder":[50.77,22.57],"elbow":[52.7,38.03],"hand":[52.83,53.6],"bAnkle":[57.21,92.69],"bKnee":[54.35,71.08],"head":[50.77,13.23]},"b":{"ankle":[55.13,93.0],"knee":[53.15,71.29],"hip":[51.18,49.57],"shoulder":[51.18,22.57],"elbow":[49.25,38.03],"hand":[49.12,53.6],"bAnkle":[42.59,92.3],"bKnee":[47.59,71.08],"head":[51.18,13.23]},"floor":93.0,"headR":6.23}};
-const PAT_BY_NAME = {"45\u00b0 back extension":"backExt","Ab-machine crunch":"reverseCrunch","Arnold press":"shoulderPress","Assisted dip machine":"pullup","Assisted Nordic curl":"backExt","Assisted pull-up / pulldown":"pullup","Assisted pull-up machine":"pullup","Band abduction":"abduction","Band lateral raise":"lateralRaise","Band pull-apart":"facePull","Band seated abduction":"abduction","Barbell / Smith hip thrust":"hipThrust","Barbell RDL":"hinge","Bear hold":"deadBug","Belt squat":"squat","Bench single-leg bridge":"bridge1","Bent-over DB rear-delt raise":"facePull","Bicep curl":"curl","Bird dog":"deadBug","Box step-down":"stepUp","Bulgarian split squat":"splitSquat","Cable chest press":"benchPress","Cable cross-body abduction":"abduction","Cable crunch":"reverseCrunch","Cable curl":"curl","Cable kickback":"pushdown","Cable kickback machine":"abduction","Cable lateral raise":"lateralRaise","Cable leg curl":"legCurl","Cable pull-through":"pullThrough","Cable rear-delt row":"row","Cable rotation":"pallof","Cable shoulder press":"shoulderPress","Cable upright row":"row","Captain's chair knee raise":"hangingRaise","Chest-supported DB row":"row","Chest-supported row":"row","Close-grip Smith press":"benchPress","Copenhagen plank":"sidePlank","DB bench / machine press":"benchPress","DB lateral raise":"lateralRaise","DB shoulder press":"shoulderPress","DB skullcrusher":"overheadExt","Dead bug":"deadBug","EZ-bar curl":"curl","Face pull":"facePull","Farmer carry":"carry","Frog pump (DB)":"hipThrust","Glute drive machine":"hipThrust","Glute drive machine, one leg":"bridge1","Glute-ham raise":"backExt","Goblet squat":"squat","Hack squat":"hackSquat","Half-kneeling cable press":"pallof","Hammer curl":"curl","Hanging knee raise":"hangingRaise","Heel-elevated goblet squat":"squat","Hip abduction":"abduction","Hip abduction machine":"abduction","Hip thrust":"hipThrust","Hip thrust on bench (DB)":"hipThrust","Hollow hold":"deadBug","Horizontal seated leg press":"legPress","Incline DB curl":"curl","Inverted row on the Smith bar":"row","Iso-lateral plate-loaded pulldown":"pulldown","Iso-lateral plate-loaded row":"row","Kettlebell swing":"hinge","Landmine press":"shoulderPress","Landmine squat":"squat","Lat pulldown":"pulldown","Leaning single-arm cable raise":"lateralRaise","Leg press (feet mid-high)":"legPress","Leg press, feet low":"legPress","Leg-press calf press":"calfRaise","Loaded 45\u00b0 back extension":"backExt","Lying leg curl":"legCurl","Machine lateral raise":"lateralRaise","Machine pullover":"pulldown","Machine shoulder press":"shoulderPress","Neutral-grip pulldown":"pulldown","Overhead cable extension":"overheadExt","Pallof press":"pallof","Pec deck":"benchPress","Plank":"plank","Plate-loaded chest press":"benchPress","Plate-loaded high row":"row","Preacher-curl machine":"curl","Push-up, feet raised":"benchPress","Reverse crunch":"reverseCrunch","Reverse hyper":"backExt","Reverse lunge (DB)":"lunge","Reverse pec deck":"benchPress","Romanian deadlift (DB)":"hinge","Seated abduction machine":"abduction","Seated cable row":"row","Seated calf raise":"calfRaise","Seated hip abduction":"abduction","Seated leg curl":"legCurl","Seated machine row":"row","Seated rope face pull":"facePull","Side plank":"sidePlank","Side-lying abduction":"abduction","Single-arm cable kickback":"pushdown","Single-arm DB row":"row","Single-leg calf raise on a step":"calfRaise","Single-leg hip thrust":"bridge1","Single-leg press":"legPress","Single-leg RDL (DB)":"hinge","Sled push":"carry","Smith machine calf raise":"calfRaise","Smith machine hip thrust":"hipThrust","Smith machine incline press":"benchPress","Smith machine lunge":"lunge","Smith machine press":"shoulderPress","Smith machine RDL":"hinge","Smith machine split squat":"splitSquat","Smith machine squat":"squat","Smith machine step-up":"stepUp","Split squat":"splitSquat","Split-stance rope pull-through":"pullThrough","Stability-ball back extension":"backExt","Stability-ball dead bug":"deadBug","Stability-ball leg curl":"legCurl","Standing cable abduction":"abduction","Standing calf machine":"calfRaise","Standing calf raise":"calfRaise","Standing single-leg curl":"legCurl","Static split squat (DB)":"splitSquat","Step-up (knee-height box)":"stepUp","Step-up on plyo box":"stepUp","Straight-arm pulldown":"pulldown","Suitcase carry":"carry","Triceps pushdown":"pushdown","Two-leg hip thrust":"hipThrust","Walking lunge":"lunge"};
+const DEMO_CDN = "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/";
 
-/* ── movement animations ──────────────────────────────────────────────────
-   Original line-figure animations, drawn from a jointed rig. Every animated
-   exercise library that exists is commercially licensed, so these are built
-   from scratch: no licence question, ~5 KB gzipped for all 31 patterns, and
-   they work with no signal. Two poses per movement, eased back and forth via
-   SMIL on the polyline points so there is no JS animation loop running. */
-const CHAINS = [["ankle","knee","hip","shoulder"], ["shoulder","elbow","hand"],
-                ["hip","bKnee","bAnkle"], ["shoulder","bElbow","bHand"]];
-const patFor = name => PAT_BY_NAME[name] || null;
+/* Keyed by the name actually being performed, so swapping to a hack squat
+   shows a hack squat. Every id validated against the library index; where
+   there is no honest match the entry is omitted rather than guessed. */
+const DEMO_BY_NAME = {
+  "45\u00b0 back extension": "Hyperextensions_Back_Extensions",
+  "Ab-machine crunch": "Ab_Crunch_Machine",
+  "Arnold press": "Arnold_Dumbbell_Press",
+  "Assisted Nordic curl": "Natural_Glute_Ham_Raise",
+  "Assisted dip machine": "Parallel_Bar_Dip",
+  "Assisted pull-up / pulldown": "Band_Assisted_Pull-Up",
+  "Assisted pull-up machine": "Band_Assisted_Pull-Up",
+  "Band abduction": "Thigh_Abductor",
+  "Band lateral raise": "Side_Lateral_Raise",
+  "Band pull-apart": "Back_Flyes_-_With_Bands",
+  "Band seated abduction": "Thigh_Abductor",
+  "Barbell / Smith hip thrust": "Barbell_Hip_Thrust",
+  "Barbell RDL": "Romanian_Deadlift",
+  "Bench single-leg bridge": "Single_Leg_Glute_Bridge",
+  "Bent-over DB rear-delt raise": "Reverse_Flyes",
+  "Bicep curl": "Dumbbell_Bicep_Curl",
+  "Box step-down": "Dumbbell_Step_Ups",
+  "Bulgarian split squat": "Split_Squat_with_Dumbbells",
+  "Cable chest press": "Cable_Chest_Press",
+  "Cable cross-body abduction": "Thigh_Abductor",
+  "Cable crunch": "Cable_Crunch",
+  "Cable curl": "Standing_Biceps_Cable_Curl",
+  "Cable kickback": "Glute_Kickback",
+  "Cable kickback machine": "One-Legged_Cable_Kickback",
+  "Cable lateral raise": "Side_Lateral_Raise",
+  "Cable leg curl": "Standing_Leg_Curl",
+  "Cable pull-through": "Pull_Through",
+  "Cable rear-delt row": "Barbell_Rear_Delt_Row",
+  "Cable rotation": "Pallof_Press_With_Rotation",
+  "Cable shoulder press": "Cable_Shoulder_Press",
+  "Cable upright row": "Upright_Row_-_With_Bands",
+  "Captain's chair knee raise": "Hanging_Leg_Raise",
+  "Chest-supported DB row": "Dumbbell_Incline_Row",
+  "Chest-supported row": "Dumbbell_Incline_Row",
+  "Close-grip Smith press": "Close-Grip_Barbell_Bench_Press",
+  "Copenhagen plank": "Side_Bridge",
+  "DB bench / machine press": "Dumbbell_Bench_Press",
+  "DB lateral raise": "Side_Lateral_Raise",
+  "DB shoulder press": "Dumbbell_Shoulder_Press",
+  "DB skullcrusher": "Lying_Triceps_Press",
+  "Dead bug": "Dead_Bug",
+  "EZ-bar curl": "EZ-Bar_Curl",
+  "Face pull": "Face_Pull",
+  "Farmer carry": "Rickshaw_Carry",
+  "Frog pump (DB)": "Barbell_Glute_Bridge",
+  "Glute drive machine": "Barbell_Hip_Thrust",
+  "Glute drive machine, one leg": "Single_Leg_Glute_Bridge",
+  "Glute-ham raise": "Glute_Ham_Raise",
+  "Goblet squat": "Goblet_Squat",
+  "Hack squat": "Hack_Squat",
+  "Half-kneeling cable press": "Pallof_Press",
+  "Hammer curl": "Hammer_Curls",
+  "Hanging knee raise": "Hanging_Leg_Raise",
+  "Heel-elevated goblet squat": "Goblet_Squat",
+  "Hip abduction": "Thigh_Abductor",
+  "Hip abduction machine": "Thigh_Abductor",
+  "Hip thrust": "Barbell_Hip_Thrust",
+  "Hip thrust on bench (DB)": "Barbell_Hip_Thrust",
+  "Horizontal seated leg press": "Leg_Press",
+  "Incline DB curl": "Incline_Dumbbell_Curl",
+  "Inverted row on the Smith bar": "Inverted_Row",
+  "Iso-lateral plate-loaded pulldown": "Wide-Grip_Lat_Pulldown",
+  "Iso-lateral plate-loaded row": "Leverage_Iso_Row",
+  "Kettlebell swing": "One-Arm_Kettlebell_Swings",
+  "Landmine press": "Landmine_Linear_Jammer",
+  "Lat pulldown": "Wide-Grip_Lat_Pulldown",
+  "Leaning single-arm cable raise": "Side_Lateral_Raise",
+  "Leg press (feet mid-high)": "Leg_Press",
+  "Leg press, feet low": "Leg_Press",
+  "Leg-press calf press": "Calf_Press_On_The_Leg_Press_Machine",
+  "Loaded 45\u00b0 back extension": "Hyperextensions_Back_Extensions",
+  "Lying leg curl": "Lying_Leg_Curls",
+  "Machine lateral raise": "Side_Lateral_Raise",
+  "Machine pullover": "Straight-Arm_Dumbbell_Pullover",
+  "Machine shoulder press": "Leverage_Shoulder_Press",
+  "Neutral-grip pulldown": "Close-Grip_Front_Lat_Pulldown",
+  "Overhead cable extension": "Cable_Rope_Overhead_Triceps_Extension",
+  "Pallof press": "Pallof_Press",
+  "Pec deck": "Butterfly",
+  "Plank": "Plank",
+  "Plate-loaded chest press": "Leverage_Chest_Press",
+  "Plate-loaded high row": "Leverage_High_Row",
+  "Preacher-curl machine": "Machine_Preacher_Curls",
+  "Push-up, feet raised": "Push-Ups_With_Feet_Elevated",
+  "Reverse crunch": "Reverse_Crunch",
+  "Reverse hyper": "Reverse_Hyperextension",
+  "Reverse lunge (DB)": "Dumbbell_Rear_Lunge",
+  "Reverse pec deck": "Reverse_Machine_Flyes",
+  "Romanian deadlift (DB)": "Stiff-Legged_Dumbbell_Deadlift",
+  "Seated abduction machine": "Thigh_Abductor",
+  "Seated cable row": "Seated_Cable_Rows",
+  "Seated calf raise": "Seated_Calf_Raise",
+  "Seated hip abduction": "Thigh_Abductor",
+  "Seated leg curl": "Seated_Leg_Curl",
+  "Seated machine row": "Seated_Cable_Rows",
+  "Seated rope face pull": "Face_Pull",
+  "Side plank": "Side_Bridge",
+  "Side-lying abduction": "Thigh_Abductor",
+  "Single-arm DB row": "One-Arm_Dumbbell_Row",
+  "Single-arm cable kickback": "Tricep_Dumbbell_Kickback",
+  "Single-leg RDL (DB)": "Stiff-Legged_Dumbbell_Deadlift",
+  "Single-leg calf raise on a step": "Calf_Raise_On_A_Dumbbell",
+  "Single-leg hip thrust": "Single_Leg_Glute_Bridge",
+  "Single-leg press": "Leg_Press",
+  "Sled push": "Sled_Push",
+  "Smith machine RDL": "Romanian_Deadlift",
+  "Smith machine calf raise": "Smith_Machine_Calf_Raise",
+  "Smith machine hip thrust": "Barbell_Hip_Thrust",
+  "Smith machine incline press": "Barbell_Incline_Bench_Press_-_Medium_Grip",
+  "Smith machine lunge": "Barbell_Lunge",
+  "Smith machine press": "Barbell_Shoulder_Press",
+  "Smith machine split squat": "Smith_Single-Leg_Split_Squat",
+  "Smith machine squat": "Barbell_Squat",
+  "Smith machine step-up": "Barbell_Step_Ups",
+  "Split squat": "Split_Squats",
+  "Split-stance rope pull-through": "Pull_Through",
+  "Stability-ball back extension": "Hyperextensions_With_No_Hyperextension_Bench",
+  "Stability-ball dead bug": "Dead_Bug",
+  "Stability-ball leg curl": "Ball_Leg_Curl",
+  "Standing cable abduction": "Thigh_Abductor",
+  "Standing calf machine": "Standing_Calf_Raises",
+  "Standing calf raise": "Standing_Calf_Raises",
+  "Standing single-leg curl": "Standing_Leg_Curl",
+  "Static split squat (DB)": "Split_Squat_with_Dumbbells",
+  "Step-up (knee-height box)": "Dumbbell_Step_Ups",
+  "Step-up on plyo box": "Dumbbell_Step_Ups",
+  "Straight-arm pulldown": "Straight-Arm_Dumbbell_Pullover",
+  "Suitcase carry": "Rickshaw_Carry",
+  "Triceps pushdown": "Triceps_Pushdown",
+  "Two-leg hip thrust": "Barbell_Hip_Thrust",
+  "Walking lunge": "Dumbbell_Lunges",
+};
 
-function pts(pose, chain){
-  return chain.filter(j => pose[j]).map(j => pose[j].join(",")).join(" ");
-}
-function anim(attr, from, to, dur){
-  return `<animate attributeName="${attr}" values="${from};${to};${from}"
-    dur="${dur}" repeatCount="indefinite" calcMode="spline"
-    keyTimes="0;0.5;1" keySplines="0.45 0 0.15 1;0.45 0 0.15 1"/>`;
-}
-function demoSVG(name, opts){
-  const key = patFor(name);
-  if (!key || !RIG[key]) return "";
-  const P = RIG[key], o = opts || {};
-  const dur = (o.dur || 2.9) + "s";
-  const fw = o.thin ? 2.6 : 3.4, pw = o.thin ? 1.8 : 2.3;
-  let s = `<svg viewBox="0 0 100 100" class="rigsvg" role="img" aria-label="${esc(name)} demonstration"
-    style="width:100%;height:100%;display:block">`;
+/* Where the library has no entry for the exact setup, say so under the
+   frame rather than letting the picture quietly contradict the prescription. */
+const DEMO_NOTE = {
+  "Assisted Nordic curl": "unassisted version \u2014 anchor the heels and use your hands",
+  "Assisted dip machine": "unassisted dip \u2014 the machine takes some weight",
+  "Assisted pull-up machine": "band assist \u2014 machine assist is the same path",
+  "Band abduction": "seated machine \u2014 same job with a band",
+  "Band lateral raise": "dumbbell version \u2014 same path with a band",
+  "Band seated abduction": "machine version \u2014 band round the knees",
+  "Box step-down": "step-up \u2014 reverse it, lowering under control",
+  "Bulgarian split squat": "flat-footed split squat \u2014 elevate the back foot",
+  "Cable cross-body abduction": "seated machine \u2014 same job on a cable",
+  "Cable lateral raise": "dumbbell version \u2014 same path on a low pulley",
+  "Cable leg curl": "machine version \u2014 same curl off a low pulley",
+  "Captain's chair knee raise": "hanging version \u2014 the chair supports your back",
+  "Close-grip Smith press": "barbell version \u2014 same on the Smith bar",
+  "Copenhagen plank": "side plank \u2014 top leg goes on the bench",
+  "DB skullcrusher": "close to it \u2014 dumbbells instead of the bar",
+  "Frog pump (DB)": "straight-leg bridge \u2014 heels together, knees out",
+  "Glute drive machine": "barbell version \u2014 the machine does the same movement",
+  "Glute drive machine, one leg": "floor bridge \u2014 machine version, one leg",
+  "Half-kneeling cable press": "standing version \u2014 drop to one knee",
+  "Hanging knee raise": "straight-leg version \u2014 bend the knees",
+  "Heel-elevated goblet squat": "flat-footed \u2014 keep your heels raised on a plate",
+  "Hip thrust on bench (DB)": "barbell version \u2014 dumbbell sits on the hips instead",
+  "Horizontal seated leg press": "45\u00b0 sled \u2014 the horizontal machine is the same push",
+  "Iso-lateral plate-loaded pulldown": "cable pulldown \u2014 the plate machine is the same path",
+  "Landmine press": "jammer \u2014 the landmine press is the same arc",
+  "Leaning single-arm cable raise": "two-arm version \u2014 lean away from the stack",
+  "Leg press (feet mid-high)": "standard foot position \u2014 set yours higher on the plate",
+  "Leg press, feet low": "standard foot position \u2014 set yours lower on the plate",
+  "Loaded 45\u00b0 back extension": "unloaded version \u2014 hold a plate to the chest",
+  "Machine lateral raise": "dumbbell version \u2014 the machine is the same path",
+  "Machine pullover": "dumbbell version \u2014 the machine is the same arc",
+  "Neutral-grip pulldown": "close grip \u2014 use the neutral handle",
+  "Pec deck": "machine fly \u2014 same squeeze",
+  "Seated machine row": "cable version \u2014 the machine is the same pull",
+  "Seated rope face pull": "standing version \u2014 same pull seated",
+  "Side-lying abduction": "seated machine \u2014 same job lying on your side",
+  "Single-leg RDL (DB)": "two-leg version \u2014 one foot stays planted",
+  "Single-leg hip thrust": "floor bridge \u2014 shoulders go on the bench",
+  "Single-leg press": "two-leg version \u2014 press with one foot centred",
+  "Smith machine RDL": "barbell version \u2014 same hinge on the Smith bar",
+  "Smith machine hip thrust": "barbell version \u2014 same setup on the Smith bar",
+  "Smith machine incline press": "barbell version \u2014 same on the Smith bar",
+  "Smith machine lunge": "barbell version \u2014 same on the Smith bar",
+  "Smith machine press": "barbell version \u2014 same on the Smith bar",
+  "Smith machine squat": "free-bar version \u2014 same on the Smith bar",
+  "Split-stance rope pull-through": "square stance \u2014 stagger the feet",
+  "Stability-ball dead bug": "floor version \u2014 press a ball between hands and knees",
+  "Standing cable abduction": "seated machine \u2014 same job standing on a low pulley",
+  "Suitcase carry": "two-handle carry \u2014 one weight, one side",
+};
 
-  if (P.floor !== undefined)
-    s += `<line x1="4" y1="${P.floor}" x2="96" y2="${P.floor}" stroke="var(--divider)" stroke-width="1.4"/>`;
+const demoIdFor = name => DEMO_BY_NAME[name] || null;
+const demoA = name => { const i = demoIdFor(name); return i ? DEMO_CDN + i + "/0.jpg" : ""; };
+const demoB = name => { const i = demoIdFor(name); return i ? DEMO_CDN + i + "/1.jpg" : ""; };
+const demoNote = name => DEMO_NOTE[name] || null;
 
-  (P.props || []).forEach(pr => {
-    if (pr.t === "line"){
-      const [x1,y1,x2,y2] = pr.p;
-      s += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="var(--accent)" stroke-width="${pw+0.6}" stroke-linecap="round" opacity=".75"/>`;
-    } else if (pr.t === "box" || pr.t === "pad"){
-      const [x,y,w,h] = pr.p;
-      s += `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="none" stroke="var(--accent)" stroke-width="${pw}" opacity=".75"/>`;
-    } else if (pr.t === "cable"){
-      const [ax,ay] = pr.p;
-      const A = `${ax},${ay} ${P.a.hand.join(",")}`, B = `${ax},${ay} ${P.b.hand.join(",")}`;
-      s += `<polyline fill="none" stroke="var(--accent)" stroke-width="${pw-0.5}" opacity=".7">${anim("points",A,B,dur)}</polyline>`
-         + `<circle cx="${ax}" cy="${ay}" r="2" fill="var(--accent)" opacity=".7"/>`;
-    } else if (pr.t === "barHand" || pr.t === "barHip"){
-      const j = pr.t === "barHand" ? "hand" : "hip", dy = pr.t === "barHip" ? -3 : 0, r = 11;
-      const seg = p => `${p[j][0]-r},${p[j][1]+dy} ${p[j][0]+r},${p[j][1]+dy}`;
-      s += `<polyline fill="none" stroke="var(--accent)" stroke-width="${pw+1}" stroke-linecap="round">${anim("points", seg(P.a), seg(P.b), dur)}</polyline>`;
-    }
-  });
-
-  CHAINS.forEach(ch => {
-    const A = pts(P.a, ch), B = pts(P.b, ch);
-    if (!A || A.split(" ").length < 2) return;
-    s += `<polyline fill="none" stroke="var(--text)" stroke-width="${fw}" stroke-linecap="round" stroke-linejoin="round">${anim("points", A, B, dur)}</polyline>`;
-  });
-
-  const hr = P.headR || 6;
-  s += `<circle r="${hr}" fill="none" stroke="var(--text)" stroke-width="${fw}">`
-     + anim("cx", P.a.head[0], P.b.head[0], dur) + anim("cy", P.a.head[1], P.b.head[1], dur) + `</circle>`;
-  return s + "</svg>";
-}
-const patLabel = name => { const k = patFor(name); return k && RIG[k] ? RIG[k].label : ""; };
+/* Stills can only ever show start and finish. For the actual movement we send
+   her to video. Deliberately a scoped search rather than one hardcoded clip:
+   I can't watch a video to vouch for its form, and hardcoded ids rot. */
+const formSearchURL = name =>
+  "https://www.youtube.com/results?search_query=" + encodeURIComponent(name + " proper form technique");
 
 /* An alternative is hidden when the gear it needs isn't on the gym floor. */
 const GEAR = [
@@ -1113,7 +1252,8 @@ function renderFocus(P, day, gu){
   });
 
   const performed = exName(ex);
-  const showDemo = !!patFor(performed);
+  const showDemo = !!demoIdFor(performed);
+  const approx = demoNote(performed);
   let cues = "";
   (CUES[ex.id] || []).forEach((c,i) => {
     cues += `<div style="display:flex;gap:8px"><div class="num" style="font-size:11px;color:var(--a700);flex:none">${i+1}</div>
@@ -1134,13 +1274,20 @@ function renderFocus(P, day, gu){
 
     <div class="fdemo">
       <div class="bp demobox"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i>
-        ${showDemo ? demoSVG(performed) : `<div class="ph">No demo for this movement</div>`}
+        ${showDemo ? `<img src="${demoA(performed)}" alt="${esc(performed)}, start of the rep" decoding="async"
+             onerror="this.style.display='none';this.parentElement.querySelector('.ph').style.display='grid'">
+           <img class="b" src="${demoB(performed)}" alt="" decoding="async" onerror="this.style.display='none'">
+           <div class="tint"></div>
+           <div class="ph" style="display:none">Photo unavailable offline</div>`
+          : `<div class="ph">No photo for this movement</div>`}
       </div>
       <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:7px">
         <div class="eyebrow">How it should look</div>
         ${cues}
         <div style="margin-top:auto;display:flex;flex-direction:column;gap:4px">
-          ${showDemo ? `<div style="font-size:10px;line-height:1.35;color:var(--n600)">${esc(patLabel(performed))} — start to finish of one rep.</div>` : ""}
+          ${approx ? `<div style="font-size:10.5px;line-height:1.4;color:var(--a700)">Photo shows a ${esc(approx)}.</div>` : ""}
+          <button data-act="watch" data-name="${esc(performed)}"
+            style="margin-top:4px;padding:8px 10px;border:1px solid var(--accent);background:transparent;color:var(--a700);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;border-radius:var(--r);width:100%">Watch the form ↗</button>
         </div>
       </div>
     </div>
@@ -1474,22 +1621,28 @@ function renderBody(){
   h += `<div class="bp panel"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i>
     <h3>Movement demos</h3>
     <p>Two frames per lift — the start and the finish of one rep — from the public-domain free-exercise-db.
-       Every movement the app can show, including swap alternatives. Drawn from a jointed rig rather than photographed, so they cost nothing to load and work with no signal.</p>
+       Every movement the app can show, including swap alternatives. Stills load on tap; Watch opens video for the real thing.</p>
     <div class="demogrid">`;
   const shown = [];
   const seen = new Set();
   [1,2,3,4].forEach(d => PROGRAM[d].ex.forEach(ex => {
     [exName(ex)].concat(ex.alt.filter(hasGear)).forEach(nm => {
-      if (seen.has(nm) || !patFor(nm)) return;
+      if (seen.has(nm) || !demoIdFor(nm)) return;
       seen.add(nm); shown.push(nm);
     });
   }));
   shown.forEach(nm => {
+    const open = UI.demoOpen[nm];
     h += `<div class="cell">
-      <div class="bp thumb"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i>
-        ${demoSVG(nm, { thin: true, dur: 3.4 })}
+      <div class="bp thumb" data-act="demo" data-val="${esc(nm)}"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i>
+        ${open
+          ? `<img src="${demoA(nm)}" alt="${esc(nm)}" loading="lazy" decoding="async">
+             <img class="b" src="${demoB(nm)}" alt="" loading="lazy" decoding="async">
+             <div class="tint"></div>`
+          : `<div class="ph" style="display:grid">Tap to load</div>`}
       </div>
-      <div class="cap">${esc(nm)}</div></div>`;
+      <div class="cap">${esc(nm)}${demoNote(nm) ? ' <span style="color:var(--a700)">approx</span>' : ""}
+        <button data-act="watch" data-name="${esc(nm)}" style="display:block;margin-top:3px;padding:0;border:0;background:none;color:var(--a700);font-size:10px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer">Watch ↗</button></div></div>`;
   });
   h += "</div></div></div></div>";
 
@@ -1643,6 +1796,8 @@ const ACT = {
     save(["sessions"]); render(); toast("Session deleted");
   },
   filter(d){ UI.filter = d.val; UI.histOpen = null; render(); },
+  demo(d){ UI.demoOpen[d.val] = !UI.demoOpen[d.val]; render(); },
+  watch(d){ window.open(formSearchURL(d.name), "_blank", "noopener,noreferrer"); },
   lift(d){ UI.lift = d.val; render(); },
   savebody(){
     const rec = { date: today(), wu: S.prefs.unit, tu: S.prefs.tape, updatedAt: Date.now() };
