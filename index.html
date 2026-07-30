@@ -478,29 +478,203 @@ const CUES = {
    two-frame loop possible. Served via jsDelivr — raw.githubusercontent
    throttles and isn't meant for hotlinking. Paths verified against the repo. */
 const DEMO_CDN = "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/";
-const DEMO = {
-  ht:"Barbell_Hip_Thrust", rdl:"Stiff-Legged_Dumbbell_Deadlift",
-  bss:"Split_Squat_with_Dumbbells", abd:"Thigh_Abductor",
-  bex:"Hyperextensions_Back_Extensions", db:"Dead_Bug",
-  lpd:"Wide-Grip_Lat_Pulldown", bp:"Dumbbell_Bench_Press", row:"Seated_Cable_Rows",
-  lat:"Side_Lateral_Raise", fp:"Face_Pull", cur:"Dumbbell_Bicep_Curl",
-  tri:"Triceps_Pushdown", pal:"Pallof_Press", gob:"Goblet_Squat", lp:"Leg_Press",
-  slc:"Seated_Leg_Curl", lun:"Dumbbell_Lunges", cf:"Standing_Calf_Raises",
-  rc:"Reverse_Crunch", slht:"Single_Leg_Glute_Bridge", pth:"Pull_Through",
-  su:"Dumbbell_Step_Ups", abd2:"Thigh_Abductor", pu:"Band_Assisted_Pull-Up",
-  ohp:"Dumbbell_Shoulder_Press", sp:"Side_Bridge"
+
+/* Keyed by the name actually being performed, not by the programmed exercise —
+   otherwise swapping to a hack squat still shows a goblet squat. Every id below
+   was validated against the library index; ids that don't exist are omitted
+   rather than guessed, so a lift with no honest match shows no picture. */
+const DEMO_BY_NAME = {
+  "45\u00b0 back extension": "Hyperextensions_Back_Extensions",
+  "Ab-machine crunch": "Ab_Crunch_Machine",
+  "Arnold press": "Arnold_Dumbbell_Press",
+  "Assisted Nordic curl": "Natural_Glute_Ham_Raise",
+  "Assisted dip machine": "Parallel_Bar_Dip",
+  "Assisted pull-up / pulldown": "Band_Assisted_Pull-Up",
+  "Assisted pull-up machine": "Band_Assisted_Pull-Up",
+  "Band abduction": "Thigh_Abductor",
+  "Band lateral raise": "Side_Lateral_Raise",
+  "Band pull-apart": "Back_Flyes_-_With_Bands",
+  "Band seated abduction": "Thigh_Abductor",
+  "Barbell / Smith hip thrust": "Barbell_Hip_Thrust",
+  "Barbell RDL": "Romanian_Deadlift",
+  "Bench single-leg bridge": "Single_Leg_Glute_Bridge",
+  "Bent-over DB rear-delt raise": "Reverse_Flyes",
+  "Bicep curl": "Dumbbell_Bicep_Curl",
+  "Box step-down": "Dumbbell_Step_Ups",
+  "Bulgarian split squat": "Split_Squat_with_Dumbbells",
+  "Cable chest press": "Cable_Chest_Press",
+  "Cable cross-body abduction": "Thigh_Abductor",
+  "Cable crunch": "Cable_Crunch",
+  "Cable curl": "Standing_Biceps_Cable_Curl",
+  "Cable kickback": "Glute_Kickback",
+  "Cable kickback machine": "One-Legged_Cable_Kickback",
+  "Cable lateral raise": "Side_Lateral_Raise",
+  "Cable leg curl": "Standing_Leg_Curl",
+  "Cable pull-through": "Pull_Through",
+  "Cable rear-delt row": "Barbell_Rear_Delt_Row",
+  "Cable rotation": "Pallof_Press_With_Rotation",
+  "Cable shoulder press": "Cable_Shoulder_Press",
+  "Cable upright row": "Upright_Row_-_With_Bands",
+  "Captain's chair knee raise": "Hanging_Leg_Raise",
+  "Chest-supported DB row": "Dumbbell_Incline_Row",
+  "Chest-supported row": "Dumbbell_Incline_Row",
+  "Close-grip Smith press": "Close-Grip_Barbell_Bench_Press",
+  "Copenhagen plank": "Side_Bridge",
+  "DB bench / machine press": "Dumbbell_Bench_Press",
+  "DB lateral raise": "Side_Lateral_Raise",
+  "DB shoulder press": "Dumbbell_Shoulder_Press",
+  "DB skullcrusher": "Lying_Triceps_Press",
+  "Dead bug": "Dead_Bug",
+  "EZ-bar curl": "EZ-Bar_Curl",
+  "Face pull": "Face_Pull",
+  "Farmer carry": "Rickshaw_Carry",
+  "Frog pump (DB)": "Barbell_Glute_Bridge",
+  "Glute drive machine": "Barbell_Hip_Thrust",
+  "Glute drive machine, one leg": "Single_Leg_Glute_Bridge",
+  "Glute-ham raise": "Glute_Ham_Raise",
+  "Goblet squat": "Goblet_Squat",
+  "Hack squat": "Hack_Squat",
+  "Half-kneeling cable press": "Pallof_Press",
+  "Hammer curl": "Hammer_Curls",
+  "Hanging knee raise": "Hanging_Leg_Raise",
+  "Heel-elevated goblet squat": "Goblet_Squat",
+  "Hip abduction": "Thigh_Abductor",
+  "Hip abduction machine": "Thigh_Abductor",
+  "Hip thrust": "Barbell_Hip_Thrust",
+  "Hip thrust on bench (DB)": "Barbell_Hip_Thrust",
+  "Horizontal seated leg press": "Leg_Press",
+  "Incline DB curl": "Incline_Dumbbell_Curl",
+  "Inverted row on the Smith bar": "Inverted_Row",
+  "Iso-lateral plate-loaded pulldown": "Wide-Grip_Lat_Pulldown",
+  "Iso-lateral plate-loaded row": "Leverage_Iso_Row",
+  "Kettlebell swing": "One-Arm_Kettlebell_Swings",
+  "Landmine press": "Landmine_Linear_Jammer",
+  "Lat pulldown": "Wide-Grip_Lat_Pulldown",
+  "Leaning single-arm cable raise": "Side_Lateral_Raise",
+  "Leg press (feet mid-high)": "Leg_Press",
+  "Leg press, feet low": "Leg_Press",
+  "Leg-press calf press": "Calf_Press_On_The_Leg_Press_Machine",
+  "Loaded 45\u00b0 back extension": "Hyperextensions_Back_Extensions",
+  "Lying leg curl": "Lying_Leg_Curls",
+  "Machine lateral raise": "Side_Lateral_Raise",
+  "Machine pullover": "Straight-Arm_Dumbbell_Pullover",
+  "Machine shoulder press": "Leverage_Shoulder_Press",
+  "Neutral-grip pulldown": "Close-Grip_Front_Lat_Pulldown",
+  "Overhead cable extension": "Cable_Rope_Overhead_Triceps_Extension",
+  "Pallof press": "Pallof_Press",
+  "Pec deck": "Butterfly",
+  "Plank": "Plank",
+  "Plate-loaded chest press": "Leverage_Chest_Press",
+  "Plate-loaded high row": "Leverage_High_Row",
+  "Preacher-curl machine": "Machine_Preacher_Curls",
+  "Push-up, feet raised": "Push-Ups_With_Feet_Elevated",
+  "Reverse crunch": "Reverse_Crunch",
+  "Reverse hyper": "Reverse_Hyperextension",
+  "Reverse lunge (DB)": "Dumbbell_Rear_Lunge",
+  "Reverse pec deck": "Reverse_Machine_Flyes",
+  "Romanian deadlift (DB)": "Stiff-Legged_Dumbbell_Deadlift",
+  "Seated abduction machine": "Thigh_Abductor",
+  "Seated cable row": "Seated_Cable_Rows",
+  "Seated calf raise": "Seated_Calf_Raise",
+  "Seated hip abduction": "Thigh_Abductor",
+  "Seated leg curl": "Seated_Leg_Curl",
+  "Seated machine row": "Seated_Cable_Rows",
+  "Seated rope face pull": "Face_Pull",
+  "Side plank": "Side_Bridge",
+  "Side-lying abduction": "Thigh_Abductor",
+  "Single-arm DB row": "One-Arm_Dumbbell_Row",
+  "Single-arm cable kickback": "Tricep_Dumbbell_Kickback",
+  "Single-leg RDL (DB)": "Stiff-Legged_Dumbbell_Deadlift",
+  "Single-leg calf raise on a step": "Calf_Raise_On_A_Dumbbell",
+  "Single-leg hip thrust": "Single_Leg_Glute_Bridge",
+  "Single-leg press": "Leg_Press",
+  "Sled push": "Sled_Push",
+  "Smith machine RDL": "Romanian_Deadlift",
+  "Smith machine calf raise": "Smith_Machine_Calf_Raise",
+  "Smith machine hip thrust": "Barbell_Hip_Thrust",
+  "Smith machine incline press": "Barbell_Incline_Bench_Press_-_Medium_Grip",
+  "Smith machine lunge": "Barbell_Lunge",
+  "Smith machine press": "Barbell_Shoulder_Press",
+  "Smith machine split squat": "Smith_Single-Leg_Split_Squat",
+  "Smith machine squat": "Barbell_Squat",
+  "Smith machine step-up": "Barbell_Step_Ups",
+  "Split squat": "Split_Squats",
+  "Split-stance rope pull-through": "Pull_Through",
+  "Stability-ball back extension": "Hyperextensions_With_No_Hyperextension_Bench",
+  "Stability-ball dead bug": "Dead_Bug",
+  "Stability-ball leg curl": "Ball_Leg_Curl",
+  "Standing cable abduction": "Thigh_Abductor",
+  "Standing calf machine": "Standing_Calf_Raises",
+  "Standing calf raise": "Standing_Calf_Raises",
+  "Standing single-leg curl": "Standing_Leg_Curl",
+  "Static split squat (DB)": "Split_Squat_with_Dumbbells",
+  "Step-up (knee-height box)": "Dumbbell_Step_Ups",
+  "Step-up on plyo box": "Dumbbell_Step_Ups",
+  "Straight-arm pulldown": "Straight-Arm_Dumbbell_Pullover",
+  "Suitcase carry": "Rickshaw_Carry",
+  "Triceps pushdown": "Triceps_Pushdown",
+  "Two-leg hip thrust": "Barbell_Hip_Thrust",
+  "Walking lunge": "Dumbbell_Lunges",
 };
-/* Stand-ins where the library has no entry for the exact setup. Surfaced under
-   the frame so the picture never quietly contradicts the prescription. */
-const DEMO_APPROX = {
-  bss:"flat-footed split squat — elevate the back foot",
-  gob:"flat-footed goblet squat — keep your heels raised",
-  slht:"floor glute bridge — shoulders go on the bench",
-  rdl:"stiff-legged DB deadlift — same hinge, softer knee",
-  pu:"band-assisted pull-up — machine assist is the same path"
+
+/* Where the library has no entry for the exact setup, say so under the
+   frame rather than letting the picture quietly contradict the prescription. */
+const DEMO_NOTE = {
+  "Assisted Nordic curl": "unassisted version \u2014 anchor the heels and use your hands",
+  "Assisted dip machine": "unassisted dip \u2014 the machine takes some weight",
+  "Assisted pull-up machine": "band assist \u2014 machine assist is the same path",
+  "Band abduction": "seated machine \u2014 same job with a band",
+  "Band lateral raise": "dumbbell version \u2014 same path with a band",
+  "Band seated abduction": "machine version \u2014 band round the knees",
+  "Box step-down": "step-up \u2014 reverse it, lowering under control",
+  "Bulgarian split squat": "flat-footed split squat \u2014 elevate the back foot",
+  "Cable cross-body abduction": "seated machine \u2014 same job on a cable",
+  "Cable lateral raise": "dumbbell version \u2014 same path on a low pulley",
+  "Cable leg curl": "machine version \u2014 same curl off a low pulley",
+  "Captain's chair knee raise": "hanging version \u2014 the chair supports your back",
+  "Close-grip Smith press": "barbell version \u2014 same on the Smith bar",
+  "Copenhagen plank": "side plank \u2014 top leg goes on the bench",
+  "DB skullcrusher": "close to it \u2014 dumbbells instead of the bar",
+  "Frog pump (DB)": "straight-leg bridge \u2014 heels together, knees out",
+  "Glute drive machine": "barbell version \u2014 the machine does the same movement",
+  "Glute drive machine, one leg": "floor bridge \u2014 machine version, one leg",
+  "Half-kneeling cable press": "standing version \u2014 drop to one knee",
+  "Hanging knee raise": "straight-leg version \u2014 bend the knees",
+  "Heel-elevated goblet squat": "flat-footed \u2014 keep your heels raised on a plate",
+  "Hip thrust on bench (DB)": "barbell version \u2014 dumbbell sits on the hips instead",
+  "Horizontal seated leg press": "45\u00b0 sled \u2014 the horizontal machine is the same push",
+  "Iso-lateral plate-loaded pulldown": "cable pulldown \u2014 the plate machine is the same path",
+  "Landmine press": "jammer \u2014 the landmine press is the same arc",
+  "Leaning single-arm cable raise": "two-arm version \u2014 lean away from the stack",
+  "Leg press (feet mid-high)": "standard foot position \u2014 set yours higher on the plate",
+  "Leg press, feet low": "standard foot position \u2014 set yours lower on the plate",
+  "Loaded 45\u00b0 back extension": "unloaded version \u2014 hold a plate to the chest",
+  "Machine lateral raise": "dumbbell version \u2014 the machine is the same path",
+  "Machine pullover": "dumbbell version \u2014 the machine is the same arc",
+  "Neutral-grip pulldown": "close grip \u2014 use the neutral handle",
+  "Pec deck": "machine fly \u2014 same squeeze",
+  "Seated machine row": "cable version \u2014 the machine is the same pull",
+  "Seated rope face pull": "standing version \u2014 same pull seated",
+  "Side-lying abduction": "seated machine \u2014 same job lying on your side",
+  "Single-leg RDL (DB)": "two-leg version \u2014 one foot stays planted",
+  "Single-leg hip thrust": "floor bridge \u2014 shoulders go on the bench",
+  "Single-leg press": "two-leg version \u2014 press with one foot centred",
+  "Smith machine RDL": "barbell version \u2014 same hinge on the Smith bar",
+  "Smith machine hip thrust": "barbell version \u2014 same setup on the Smith bar",
+  "Smith machine incline press": "barbell version \u2014 same on the Smith bar",
+  "Smith machine lunge": "barbell version \u2014 same on the Smith bar",
+  "Smith machine press": "barbell version \u2014 same on the Smith bar",
+  "Smith machine squat": "free-bar version \u2014 same on the Smith bar",
+  "Split-stance rope pull-through": "square stance \u2014 stagger the feet",
+  "Stability-ball dead bug": "floor version \u2014 press a ball between hands and knees",
+  "Standing cable abduction": "seated machine \u2014 same job standing on a low pulley",
+  "Suitcase carry": "two-handle carry \u2014 one weight, one side",
 };
-const demoA = id => DEMO[id] ? DEMO_CDN + DEMO[id] + "/0.jpg" : "";
-const demoB = id => DEMO[id] ? DEMO_CDN + DEMO[id] + "/1.jpg" : "";
+
+const demoIdFor = name => DEMO_BY_NAME[name] || null;
+const demoA = name => { const i = demoIdFor(name); return i ? DEMO_CDN + i + "/0.jpg" : ""; };
+const demoB = name => { const i = demoIdFor(name); return i ? DEMO_CDN + i + "/1.jpg" : ""; };
+const demoNote = name => DEMO_NOTE[name] || null;
 
 /* An alternative is hidden when the gear it needs isn't on the gym floor. */
 const GEAR = [
@@ -1072,7 +1246,9 @@ function renderFocus(P, day, gu){
     bars += `<div style="background:${fill}"></div>`;
   });
 
-  const showDemo = !!DEMO[ex.id];
+  const performed = exName(ex);
+  const showDemo = !!demoIdFor(performed);
+  const approx = demoNote(performed);
   let cues = "";
   (CUES[ex.id] || []).forEach((c,i) => {
     cues += `<div style="display:flex;gap:8px"><div class="num" style="font-size:11px;color:var(--a700);flex:none">${i+1}</div>
@@ -1093,18 +1269,18 @@ function renderFocus(P, day, gu){
 
     <div class="fdemo">
       <div class="bp demobox"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i>
-        ${showDemo ? `<img src="${demoA(ex.id)}" alt="${esc(exName(ex))}, start of the rep" decoding="async"
+        ${showDemo ? `<img src="${demoA(performed)}" alt="${esc(performed)}, start of the rep" decoding="async"
              onerror="this.style.display='none';this.parentElement.querySelector('.ph').style.display='grid'">
-           <img class="b" src="${demoB(ex.id)}" alt="" decoding="async" onerror="this.style.display='none'">
+           <img class="b" src="${demoB(performed)}" alt="" decoding="async" onerror="this.style.display='none'">
            <div class="tint"></div>
            <div class="ph" style="display:none">Demo unavailable offline</div>`
-          : `<div class="ph">No demo for this lift</div>`}
+          : `<div class="ph">No demo for this movement</div>`}
       </div>
       <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:7px">
         <div class="eyebrow">How it should look</div>
         ${cues}
         <div style="margin-top:auto;display:flex;flex-direction:column;gap:4px">
-          ${DEMO_APPROX[ex.id] ? `<div style="font-size:10.5px;line-height:1.4;color:var(--a700)">Demo shows a ${esc(DEMO_APPROX[ex.id])}.</div>` : ""}
+          ${approx ? `<div style="font-size:10.5px;line-height:1.4;color:var(--a700)">Demo shows a ${esc(approx)}.</div>` : ""}
           <div style="font-size:10px;line-height:1.35;color:var(--n600)">Two frames — the start, then the finish of one rep.</div>
         </div>
       </div>
@@ -1439,23 +1615,28 @@ function renderBody(){
   h += `<div class="bp panel"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i>
     <h3>Movement demos</h3>
     <p>Two frames per lift — the start and the finish of one rep — from the public-domain free-exercise-db.
-       Tap one to load it; they're roughly 60 KB each, so they stay off until asked for.</p>
+       Every movement the app can show, including swap alternatives. Tap one to load it — roughly 60 KB each, so they stay off until asked for.</p>
     <div class="demogrid">`;
+  const shown = [];
   const seen = new Set();
   [1,2,3,4].forEach(d => PROGRAM[d].ex.forEach(ex => {
-    if (seen.has(ex.id)) return;
-    seen.add(ex.id);
-    const open = UI.demoOpen[ex.id];
-    h += `<div class="cell" data-act="demo" data-val="${ex.id}">
-      <div class="bp thumb"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i>
-        ${open && DEMO[ex.id]
-          ? `<img src="${demoA(ex.id)}" alt="${esc(ex.n)}" loading="lazy" decoding="async">
-             <img class="b" src="${demoB(ex.id)}" alt="" loading="lazy" decoding="async">
-             <div class="tint"></div>`
-          : `<div class="ph" style="display:grid">${DEMO[ex.id] ? "Tap to load" : "No demo"}</div>`}
-      </div>
-      <div class="cap">${esc(ex.n)}</div></div>`;
+    [exName(ex)].concat(ex.alt.filter(hasGear)).forEach(nm => {
+      if (seen.has(nm) || !demoIdFor(nm)) return;
+      seen.add(nm); shown.push(nm);
+    });
   }));
+  shown.forEach(nm => {
+    const open = UI.demoOpen[nm];
+    h += `<div class="cell" data-act="demo" data-val="${esc(nm)}">
+      <div class="bp thumb"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i>
+        ${open
+          ? `<img src="${demoA(nm)}" alt="${esc(nm)}" loading="lazy" decoding="async">
+             <img class="b" src="${demoB(nm)}" alt="" loading="lazy" decoding="async">
+             <div class="tint"></div>`
+          : `<div class="ph" style="display:grid">Tap to load</div>`}
+      </div>
+      <div class="cap">${esc(nm)}${demoNote(nm) ? ' <span style="color:var(--a700)">approx</span>' : ""}</div></div>`;
+  });
   h += "</div></div></div></div>";
 
   $("view").innerHTML = h;
