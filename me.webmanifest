@@ -1,0 +1,15 @@
+{
+  "name": "Training — Adnan",
+  "short_name": "Training",
+  "description": "PPL rotation with shift-aware scheduling.",
+  "start_url": "me.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#16181a",
+  "theme_color": "#d1562b",
+  "icons": [
+    { "src": "me-icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "me-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}
