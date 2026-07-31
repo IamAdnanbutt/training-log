@@ -546,6 +546,54 @@ function to24(h, m, ap){
   return String(H).padStart(2,"0") + ":" + m;
 }
 
+/* Placing sessions on days.
+   Naively filling the first four open days produces two bad outcomes: four
+   training days in a row, and legs landing after an opening shift — squatting
+   at half three having stood on a retail floor since quarter to eight.
+   So score each day by how fresh you'd be, forbid three consecutive training
+   days, penalise back-to-back, and weight the leg days hardest toward the
+   best slots.                                                             */
+function dayScore(sh, win){
+  if (sh === undefined) return 0;             // unknown — don't plan on it
+  if (sh === "off") return 3;                 // fully rested
+  if (win.rec === "morning") return 2.5;      // trained before the shift
+  if (win.rec === "evening") return mins(sh.end) <= 15*60 ? 1.5 : 1;
+  return 0;                                   // no window
+}
+function combos(arr, n){
+  if (n === 0) return [[]];
+  return arr.flatMap((v, i) => combos(arr.slice(i+1), n-1).map(c => [v].concat(c)));
+}
+function planWeek(dates, startKey){
+  const days = dates.map((d, i) => {
+    const k = dayKey(d), sh = shiftOf(k), w = windowFor(sh);
+    return { i, key:k, sh, win:w, score: dayScore(sh, w) };
+  });
+  const open = days.filter(d => d.score > 0).map(d => d.i);
+  if (!open.length) return { plan:{}, days };
+
+  let k = startKey; const seq = [];
+  for (let n = 0; n < 4; n++){ seq.push(k); k = ROTATION[(ROTATION.indexOf(k) + 1) % ROTATION.length]; }
+
+  const want = Math.min(4, open.length);
+  let best = null;
+  combos(open, want).forEach(c => {
+    for (let x = 2; x < c.length; x++)
+      if (c[x] - c[x-1] === 1 && c[x-1] - c[x-2] === 1) return;   // never three in a row
+    let adj = 0;
+    for (let x = 1; x < c.length; x++) if (c[x] - c[x-1] === 1) adj++;
+    let s = -adj * 1.4;
+    c.forEach((di, n) => {
+      const sc = days[di].score;
+      s += sc + (isLegs(seq[n]) ? sc * 1.6 : 0);   // legs weighted toward the freshest days
+    });
+    if (!best || s > best.s) best = { s, c };
+  });
+  const plan = {};
+  if (best) best.c.forEach((di, n) => { plan[days[di].key] = seq[n]; });
+  return { plan, days };
+}
+
 const dayKey = d => d.toISOString().slice(0,10);
 function weekDates(offset){
   const t = new Date(); t.setHours(12,0,0,0);
@@ -955,9 +1003,7 @@ function renderWeek(){
   $("eyebrow").textContent = "Roster";
   $("title").textContent = UI.wk === 0 ? "This week" : UI.wk === 1 ? "Next week" : "Week " + (UI.wk+1);
   const dates = weekDates(UI.wk);
-  const upcoming = [];
-  let k = nextKey();
-  for (let i=0;i<7;i++){ upcoming.push(k); k = ROTATION[(ROTATION.indexOf(k)+1) % ROTATION.length]; }
+  const { plan, days } = planWeek(dates, nextKey());
 
   let h = `<div class="filters">
     <button data-act="wk" data-val="-1" ${UI.wk<=0?"disabled":""}>‹ Previous</button>
@@ -965,20 +1011,21 @@ function renderWeek(){
 
   h += `<div class="bp panel"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i>
     <h3>Shifts and training windows</h3>
-    <p>Enter each day's shift and the plan places the session around it. Blank means unknown; tap Off for a day off.</p>`;
+    <p>Enter each day's shift and it places the sessions. Legs goes on the freshest day available, never three training days in a row.</p>`;
 
-  let slot = 0;
-  dates.forEach(d => {
-    const key = dayKey(d), sh = shiftOf(key), win = windowFor(sh);
-    const trainable = win.kind !== "tight" && sh !== undefined;
-    const assign = trainable && slot < 4 ? upcoming[slot++] : null;
+  days.forEach((d, idx) => {
+    const dd = dates[idx], key = d.key, sh = d.sh, win = d.win;
+    const assign = plan[key];
     const isToday = key === today();
+    const heavy = assign && isLegs(assign) && d.score <= 1.5;
     h += `<div style="border-top:1px solid var(--divider);padding:10px 0">
-      <div style="display:flex;align-items:baseline;gap:8px">
-        <div class="num" style="font-size:13px;${isToday?"color:var(--a700)":""}">${DAYS[d.getDay()]} ${d.getDate()}</div>
+      <div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap">
+        <div class="num" style="font-size:13px;${isToday?"color:var(--a700)":""}">${DAYS[dd.getDay()]} ${dd.getDate()}</div>
         ${assign ? `<div class="chip acc" style="margin:0">${SESSIONS[assign].label}</div>` : ""}
-        <div style="margin-left:auto;font-size:11px;color:${trainable?"var(--a700)":"var(--n600)"}">${sh===undefined?"—":esc(win.text)}</div>
+        ${sh !== undefined && !assign ? `<div style="font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--n600)">rest</div>` : ""}
+        <div style="margin-left:auto;font-size:11px;color:${d.score?"var(--a700)":"var(--n600)"}">${sh===undefined?"—":esc(win.text)}</div>
       </div>
+      ${heavy ? `<div style="font-size:10.5px;color:#a03a32;margin-top:4px">Legs after a full shift — swap with a better day if you can</div>` : ""}
       <div style="display:flex;gap:6px;margin-top:7px;align-items:center">
         <input class="tin" inputmode="numeric" placeholder="start" value="${sh&&sh!=="off"?sh.start:""}" data-inact="sh" data-d="${key}" data-f="start" aria-label="shift start">
         <span style="color:var(--n600);font-size:12px">to</span>
@@ -987,6 +1034,7 @@ function renderWeek(){
         <button class="tool" style="flex:0 0 56px;height:34px" data-act="clr" data-val="${key}">Clear</button>
       </div></div>`;
   });
+
   h += `</div>`;
 
   const pr = UI.parsed;
@@ -1190,12 +1238,25 @@ const ACT = {
     if (UI.parsed.length) toast("Found " + UI.parsed.length + " days — check then apply");
   },
   applyparse(){
-    (UI.parsed||[]).forEach(r => {
-      S.shifts[r.key] = r.shift === "off" ? "off" : { start:r.shift.start, end:r.shift.end, ts:Date.now() };
+    const rows = UI.parsed || [];
+    if (!rows.length) return;
+    const ts = Date.now();
+    rows.forEach(r => {
+      S.shifts[r.key] = r.shift === "off" ? "off" : { start:r.shift.start, end:r.shift.end, ts };
     });
-    const n = (UI.parsed||[]).length;
+    /* A roster only lists the days you work. Every other day inside the range
+       it covers is a day off, not an unknown — and days off are the best
+       training days there are, so filling them in matters more than it looks. */
+    const keys = rows.map(r => r.key).sort();
+    let off = 0;
+    for (let d = new Date(keys[0] + "T12:00:00"), end = new Date(keys[keys.length-1] + "T12:00:00");
+         d <= end; d.setDate(d.getDate() + 1)){
+      const k = dayKey(d);
+      if (!S.shifts[k]){ S.shifts[k] = "off"; off++; }
+    }
     UI.parsed = null; UI.paste = "";
-    save(["shifts"]); render(); toast(n + " days added");
+    save(["shifts"]); render();
+    toast(rows.length + " shifts + " + off + " days off");
   },
   off(d){ S.shifts[d.val] = S.shifts[d.val] === "off" ? undefined : "off";
           if (!S.shifts[d.val]) delete S.shifts[d.val]; save(["shifts"]); render(); },
