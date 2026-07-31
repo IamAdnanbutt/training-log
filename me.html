@@ -504,6 +504,48 @@ function windowFor(shift){
            text:"Evening — from " + pretty(e + 30) + (beforeOK ? ", or before " + pretty(s - 45) : "") };
 }
 
+/* Parse a schedule pasted straight out of the Staples app. It arrives as a
+   loose blob — "Sun 9  9:00 AM-4:00 PM [7.00]" — so pair each weekday+date
+   token with the next time range that follows it. Month is inferred: day
+   numbers only ever climb within a paste, so a drop means the month rolled. */
+const MON = ["January","February","March","April","May","June","July",
+             "August","September","October","November","December"];
+function parseSchedule(text){
+  if (!text || !text.trim()) return [];
+  const tok = [];
+  const re = /(Sun|Mon|Tue|Wed|Thu|Fri|Sat)[a-z]*\.?\s*(\d{1,2})\b|(\d{1,2}):(\d{2})\s*(AM|PM)\s*[-–—to]+\s*(\d{1,2}):(\d{2})\s*(AM|PM)|\b(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{4})?/gi;
+  let m;
+  while ((m = re.exec(text)) !== null){
+    if (m[1]) tok.push({ t:"day", dow:m[1].slice(0,3), d:Number(m[2]) });
+    else if (m[3]) tok.push({ t:"time", s:to24(m[3],m[4],m[5]), e:to24(m[6],m[7],m[8]) });
+    else if (m[9]) tok.push({ t:"month", mo:MON.findIndex(x => x.toLowerCase() === m[9].toLowerCase()), yr:m[10]?Number(m[10]):null });
+  }
+  const now = new Date();
+  let mo = now.getMonth(), yr = now.getFullYear(), last = 0;
+  const out = [];
+  for (let i = 0; i < tok.length; i++){
+    const k = tok[i];
+    if (k.t === "month"){ mo = k.mo; if (k.yr) yr = k.yr; last = 0; continue; }
+    if (k.t !== "day") continue;
+    if (k.d < last){ mo++; if (mo > 11){ mo = 0; yr++; } }
+    last = k.d;
+    const date = new Date(yr, mo, k.d, 12);
+    // the shift is the next time range before the following day marker
+    let shift = "off";
+    for (let j = i + 1; j < tok.length; j++){
+      if (tok[j].t === "day") break;
+      if (tok[j].t === "time"){ shift = { start:tok[j].s, end:tok[j].e }; break; }
+    }
+    out.push({ key: dayKey(date), label: k.dow + " " + k.d + " " + MON[mo].slice(0,3), shift });
+  }
+  return out;
+}
+function to24(h, m, ap){
+  let H = Number(h) % 12;
+  if (/pm/i.test(ap)) H += 12;
+  return String(H).padStart(2,"0") + ":" + m;
+}
+
 const dayKey = d => d.toISOString().slice(0,10);
 function weekDates(offset){
   const t = new Date(); t.setHours(12,0,0,0);
@@ -618,7 +660,7 @@ function applyMerged(m){
       tape: p.tape === "cm" ? "cm" : "in",
       ex: p.ex || {}, subs: p.subs || {},
       gearOff: Array.isArray(p.gearOff) ? p.gearOff : GEAR_OFF_DEFAULT.slice(),
-      theme: THEMES.some(t => t.k === p.theme) ? p.theme : "iron",
+      theme: THEMES.some(t => t.k === p.theme) ? p.theme : "steel",
       layout: p.layout === "focus" ? "focus" : "flow",
       chart: p.chart === "lines" ? "lines" : "bars",
       welcomed: !!p.welcomed, updatedAt: p.updatedAt || 0
@@ -674,8 +716,8 @@ function stopRest(){ clearInterval(restInt); $("pill").classList.remove("on"); }
 <script>
 /* ══════════════════════════ state ══════════════════════════ */
 let S = { sessions:[], body:[], shifts:{}, draft:null,
-          prefs:{ unit:"kg", tape:"in", ex:{}, theme:"iron", welcomed:false, updatedAt:0 } };
-let UI = { tab:"today", open:null, wk:0, m:{}, sh:{}, histOpen:null };
+          prefs:{ unit:"kg", tape:"in", ex:{}, theme:"steel", welcomed:false, updatedAt:0 } };
+let UI = { tab:"today", open:null, wk:0, m:{}, sh:{}, histOpen:null, paste:"", parsed:null };
 let SY = { mode:"off", email:null, last:0, busy:false, err:null };
 let saveTimer = null, syncTimer = null;
 
@@ -697,7 +739,7 @@ async function load(){
   S.prefs = { unit: p.unit === "lb" ? "lb" : "kg",
               tape: p.tape === "cm" ? "cm" : "in",
               ex: p.ex || {},
-              theme: THEMES.some(t => t.k === p.theme) ? p.theme : "iron",
+              theme: THEMES.some(t => t.k === p.theme) ? p.theme : "steel",
               welcomed: !!p.welcomed, updatedAt: p.updatedAt || 0 };
   S.sessions.forEach((x,i) => {
     if (!x.id) x.id = (x.date||"0") + "-" + x.key + "-m" + i;
@@ -945,6 +987,27 @@ function renderWeek(){
         <button class="tool" style="flex:0 0 56px;height:34px" data-act="clr" data-val="${key}">Clear</button>
       </div></div>`;
   });
+  h += `</div>`;
+
+  const pr = UI.parsed;
+  h += `<div class="bp panel"><i class="tl"></i><i class="tr"></i><i class="bl"></i><i class="br"></i>
+    <h3>Paste from Staples</h3>
+    <p>Open the schedule in the Staples app, select the weeks, copy, and paste the lot here. It reads the dates and times out of it — nothing to retype.</p>
+    <textarea id="pastebox" rows="4" placeholder="Sun 9  9:00 AM-4:00 PM [7.00]&#10;Tue 11  1:00 PM-8:00 PM [7.00]&#10;…"
+      style="width:100%;padding:9px;font-size:14px;font-family:var(--f-body);border:1px solid var(--divider);background:transparent;color:var(--text);border-radius:var(--r)">${esc(UI.paste||"")}</textarea>
+    <div class="tools"><button data-act="parse">Read it</button>
+      ${pr && pr.length ? `<button data-act="applyparse">Apply ${pr.length} day${pr.length>1?"s":""}</button>` : ""}</div>`;
+  if (pr){
+    if (!pr.length) h += `<div class="eyebrow" style="margin-top:10px;color:#a03a32">Couldn't find any shifts in that</div>`;
+    else {
+      h += `<div style="margin-top:10px;border-top:1px solid var(--divider)">`;
+      pr.forEach(r => h += `<div style="display:flex;gap:10px;padding:5px 0;font-size:12.5px;border-bottom:1px solid var(--divider)">
+        <span class="num" style="width:74px;color:var(--n600)">${esc(r.label)}</span>
+        <span class="num">${r.shift === "off" ? "off" : pretty(mins(r.shift.start)) + " – " + pretty(mins(r.shift.end))}</span>
+        <span style="margin-left:auto;font-size:11px;color:var(--a700)">${esc(windowFor(r.shift).text)}</span></div>`);
+      h += `</div><div class="eyebrow" style="margin-top:9px">Check the dates before applying</div>`;
+    }
+  }
   h += `</div>
     <div class="note">Times as 24-hour, e.g. <em>13:00</em> to <em>20:00</em>. A window needs about 70 minutes clear — 55 to train plus travel — with 45 minutes before a shift or 30 after. Days that can't fit one are left as rest.<br><br>
     Four sessions land per week; the rotation carries over, so a missed day shifts everything rather than skipping a workout.</div>`;
@@ -1119,6 +1182,21 @@ const ACT = {
     toast(SESSIONS[rec.key].label + " saved · " + fmtVol(volumeKg(rec)) + " " + S.prefs.unit);
   },
   wk(d){ UI.wk = Math.max(0, UI.wk + Number(d.val)); render(); },
+  parse(){
+    const box = $("pastebox");
+    UI.paste = box ? box.value : "";
+    UI.parsed = parseSchedule(UI.paste);
+    render();
+    if (UI.parsed.length) toast("Found " + UI.parsed.length + " days — check then apply");
+  },
+  applyparse(){
+    (UI.parsed||[]).forEach(r => {
+      S.shifts[r.key] = r.shift === "off" ? "off" : { start:r.shift.start, end:r.shift.end, ts:Date.now() };
+    });
+    const n = (UI.parsed||[]).length;
+    UI.parsed = null; UI.paste = "";
+    save(["shifts"]); render(); toast(n + " days added");
+  },
   off(d){ S.shifts[d.val] = S.shifts[d.val] === "off" ? undefined : "off";
           if (!S.shifts[d.val]) delete S.shifts[d.val]; save(["shifts"]); render(); },
   clr(d){ delete S.shifts[d.val]; delete UI.sh[d.val]; save(["shifts"]); render(); },
@@ -1188,7 +1266,7 @@ document.addEventListener("input", e => {
 function applyTheme(){
   document.body.dataset.theme = S.prefs.theme;
   const m = document.querySelector('meta[name="theme-color"]');
-  if (m) m.content = getComputedStyle(document.body).getPropertyValue("--accent").trim() || "#d1562b";
+  if (m) m.content = getComputedStyle(document.body).getPropertyValue("--accent").trim() || "#5980a6";
 }
 function render(){
   $("count").textContent = liveSessions().length;
